@@ -1,3 +1,35 @@
 <resources>
     <string name="app_name">GameShelf</string>
+    <string name="title_gameshelf">GAMESHELF</string>
+    <string name="subtitle_user_registration">Registro de usuario</string>
+    <string name="section_new_registration">Nuevo registro</string>
+    <string name="desc_secure_form">Formulario seguro y sencillo</string>
+    <string name="badge_room">ROOM</string>
+    <string name="title_personal_info">Información personal</string>
+    <string name="desc_personal_info">Ingresa los datos solicitados para crear el registro.</string>
+
+    <string name="label_name">Nombre</string>
+    <string name="placeholder_name">Ej. Angel</string>
+    <string name="error_name_required">El nombre es obligatorio</string>
+
+    <string name="label_last_name">Apellidos</string>
+    <string name="placeholder_last_name">Ej. Alvarez Nava</string>
+    <string name="error_last_name_required">Los apellidos son obligatorios</string>
+
+    <string name="label_address">Dirección</string>
+    <string name="placeholder_address">Ej. Guadalajara, Jalisco</string>
+    <string name="error_address_required">La dirección es obligatoria</string>
+
+    <string name="label_phone">Teléfono</string>
+    <string name="placeholder_phone">10 dígitos</string>
+    <string name="error_phone_required">El teléfono es obligatorio</string>
+    <string name="error_phone_length">El teléfono debe tener 10 dígitos</string>
+
+    <string name="btn_save_user">Guardar usuario</string>
+    <string name="btn_saving">Guardando…</string>
+    <string name="msg_room_storage">✓ Los datos se almacenan localmente con Room</string>
+    <string name="msg_complete_fields">Completa todos los campos para habilitar un registro válido</string>
+
+    <string name="msg_success_registration">✓ Usuario registrado correctamente</string>
+    <string name="msg_error_saving">No fue posible guardar el usuario</string>
 </resources>

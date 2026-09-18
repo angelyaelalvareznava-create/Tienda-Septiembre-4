@@ -26,7 +26,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -34,24 +33,27 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tiendita.database.AppDatabase
-import com.example.tiendita.model.User
+import com.example.tiendita.repository.UserRepository
+import com.example.tiendita.ui.components.GameShelfTextField
 import com.example.tiendita.ui.theme.GameShelfTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.tiendita.viewmodel.UserFormEvent
+import com.example.tiendita.viewmodel.UserViewModel
+import com.example.tiendita.viewmodel.UserViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,7 +61,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             GameShelfTheme(dynamicColor = false) {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    UserFormScreen(lifecycleScope)
+                    val context = LocalContext.current
+                    val database = remember { AppDatabase.getDatabase(context.applicationContext) }
+                    val repository = remember { com.example.tiendita.repository.UserRepositoryImpl(database.userDao()) }
+                    
+                    val viewModel: UserViewModel = viewModel(
+                        factory = UserViewModelFactory(repository)
+                    )
+                    
+                    UserFormScreen(viewModel)
                 }
             }
         }
@@ -67,20 +77,30 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun UserFormScreen(lifecycleScope: CoroutineScope) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val database = remember { AppDatabase.getDatabase(context.applicationContext) }
+fun UserFormScreen(viewModel: UserViewModel) {
+    val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val successMsg = stringResource(R.string.msg_success_registration)
 
-    var nombre by remember { mutableStateOf("") }
-    var apellidos by remember { mutableStateOf("") }
-    var direccion by remember { mutableStateOf("") }
-    var telefono by remember { mutableStateOf("") }
-    var errorNombre by remember { mutableStateOf<String?>(null) }
-    var errorApellidos by remember { mutableStateOf<String?>(null) }
-    var errorDireccion by remember { mutableStateOf<String?>(null) }
-    var errorTelefono by remember { mutableStateOf<String?>(null) }
-    var guardando by remember { mutableStateOf(false) }
+    LaunchedEffect(state.registroExitoso) {
+        if (state.registroExitoso) {
+            snackbarHostState.showSnackbar(
+                message = successMsg,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.onEvent(UserFormEvent.ResetSuccessState)
+        }
+    }
+
+    LaunchedEffect(state.errorGeneral) {
+        state.errorGeneral?.let { error ->
+            snackbarHostState.showSnackbar(
+                message = error,
+                duration = SnackbarDuration.Long
+            )
+            viewModel.onEvent(UserFormEvent.ResetErrorState)
+        }
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -120,14 +140,14 @@ fun UserFormScreen(lifecycleScope: CoroutineScope) {
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "GAMESHELF",
+                            text = stringResource(R.string.title_gameshelf),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.ExtraBold,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(Modifier.height(2.dp))
                         Text(
-                            text = "Registro de usuario",
+                            text = stringResource(R.string.subtitle_user_registration),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -158,128 +178,61 @@ fun UserFormScreen(lifecycleScope: CoroutineScope) {
                         )
 
                         Text(
-                            text = "Información personal",
+                            text = stringResource(R.string.title_personal_info),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Ingresa los datos solicitados para crear el registro.",
+                            text = stringResource(R.string.desc_personal_info),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
-                        OutlinedTextField(
-                            value = nombre,
-                            onValueChange = { nombre = it; errorNombre = null },
-                            label = { Text("Nombre") },
-                            placeholder = { Text("Ej. Angel") },
-                            singleLine = true,
-                            isError = errorNombre != null,
-                            supportingText = { errorNombre?.let { Text(it) } },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp)
+                        GameShelfTextField(
+                            value = state.nombre,
+                            onValueChange = { viewModel.onEvent(UserFormEvent.OnNombreChanged(it)) },
+                            label = stringResource(R.string.label_name),
+                            placeholder = stringResource(R.string.placeholder_name),
+                            errorMessage = state.errorNombre,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                         )
 
-                        OutlinedTextField(
-                            value = apellidos,
-                            onValueChange = { apellidos = it; errorApellidos = null },
-                            label = { Text("Apellidos") },
-                            placeholder = { Text("Ej. Alvarez Nava") },
-                            singleLine = true,
-                            isError = errorApellidos != null,
-                            supportingText = { errorApellidos?.let { Text(it) } },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp)
+                        GameShelfTextField(
+                            value = state.apellidos,
+                            onValueChange = { viewModel.onEvent(UserFormEvent.OnApellidosChanged(it)) },
+                            label = stringResource(R.string.label_last_name),
+                            placeholder = stringResource(R.string.placeholder_last_name),
+                            errorMessage = state.errorApellidos,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                         )
 
-                        OutlinedTextField(
-                            value = direccion,
-                            onValueChange = { direccion = it; errorDireccion = null },
-                            label = { Text("Dirección") },
-                            placeholder = { Text("Ej. Guadalajara, Jalisco") },
-                            singleLine = true,
-                            isError = errorDireccion != null,
-                            supportingText = { errorDireccion?.let { Text(it) } },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp)
+                        GameShelfTextField(
+                            value = state.direccion,
+                            onValueChange = { viewModel.onEvent(UserFormEvent.OnDireccionChanged(it)) },
+                            label = stringResource(R.string.label_address),
+                            placeholder = stringResource(R.string.placeholder_address),
+                            errorMessage = state.errorDireccion,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                         )
 
-                        OutlinedTextField(
-                            value = telefono,
-                            onValueChange = {
-                                if (it.length <= 10 && it.all { char -> char.isDigit() }) {
-                                    telefono = it
-                                    errorTelefono = null
-                                }
-                            },
-                            label = { Text("Teléfono") },
-                            placeholder = { Text("10 dígitos") },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                            isError = errorTelefono != null,
-                            supportingText = { errorTelefono?.let { Text(it) } },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp)
+                        GameShelfTextField(
+                            value = state.telefono,
+                            onValueChange = { viewModel.onEvent(UserFormEvent.OnTelefonoChanged(it)) },
+                            label = stringResource(R.string.label_phone),
+                            placeholder = stringResource(R.string.placeholder_phone),
+                            errorMessage = state.errorTelefono,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Phone,
+                                imeAction = ImeAction.Done
+                            )
                         )
 
                         Spacer(Modifier.height(2.dp))
 
                         Button(
-                            onClick = {
-                                val nombreError = if (nombre.isBlank()) "El nombre es obligatorio" else null
-                                val apellidosError = if (apellidos.isBlank()) "Los apellidos son obligatorios" else null
-                                val direccionError = if (direccion.isBlank()) "La dirección es obligatoria" else null
-                                val telefonoError = when {
-                                    telefono.isBlank() -> "El teléfono es obligatorio"
-                                    telefono.length != 10 -> "El teléfono debe tener 10 dígitos"
-                                    else -> null
-                                }
-
-                                errorNombre = nombreError
-                                errorApellidos = apellidosError
-                                errorDireccion = direccionError
-                                errorTelefono = telefonoError
-
-                                val esValido = nombreError == null &&
-                                        apellidosError == null &&
-                                        direccionError == null &&
-                                        telefonoError == null
-
-                                if (esValido && !guardando) {
-                                    guardando = true
-                                    lifecycleScope.launch {
-                                        try {
-                                            withContext(Dispatchers.IO) {
-                                                database.userDao().insertUser(
-                                                    User(
-                                                        nombre = nombre.trim(),
-                                                        apellidos = apellidos.trim(),
-                                                        direccion = direccion.trim(),
-                                                        telefono = telefono.trim()
-                                                    )
-                                                )
-                                            }
-                                            nombre = ""
-                                            apellidos = ""
-                                            direccion = ""
-                                            telefono = ""
-                                            snackbarHostState.showSnackbar(
-                                                message = "✓ Usuario registrado correctamente",
-                                                duration = SnackbarDuration.Short
-                                            )
-                                        } catch (e: Exception) {
-                                            snackbarHostState.showSnackbar(
-                                                message = "No fue posible guardar el usuario",
-                                                duration = SnackbarDuration.Long
-                                            )
-                                        } finally {
-                                            guardando = false
-                                        }
-                                    }
-                                }
-                            },
-                            enabled = !guardando,
+                            onClick = { viewModel.onEvent(UserFormEvent.OnSubmit) },
+                            enabled = state.isFormValid && !state.guardando,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(56.dp),
@@ -288,21 +241,21 @@ fun UserFormScreen(lifecycleScope: CoroutineScope) {
                                 containerColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
-                            if (guardando) {
+                            if (state.guardando) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.width(22.dp),
                                     strokeWidth = 2.dp,
                                     color = MaterialTheme.colorScheme.onPrimary
                                 )
                                 Spacer(Modifier.width(10.dp))
-                                Text("Guardando...")
+                                Text(stringResource(R.string.btn_saving))
                             } else {
-                                Text("Guardar usuario", fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.btn_save_user), fontWeight = FontWeight.Bold)
                             }
                         }
 
                         Text(
-                            text = "✓ Los datos se almacenan localmente con Room",
+                            text = stringResource(R.string.msg_room_storage),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -312,7 +265,7 @@ fun UserFormScreen(lifecycleScope: CoroutineScope) {
 
                 Spacer(Modifier.height(14.dp))
                 Text(
-                    text = "Completa todos los campos para habilitar un registro válido",
+                    text = stringResource(R.string.msg_complete_fields),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -344,12 +297,12 @@ private fun RowSectionHeader() {
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Nuevo registro",
+                text = stringResource(R.string.section_new_registration),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Formulario seguro y sencillo",
+                text = stringResource(R.string.desc_secure_form),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -359,7 +312,7 @@ private fun RowSectionHeader() {
             color = MaterialTheme.colorScheme.secondaryContainer
         ) {
             Text(
-                text = "ROOM",
+                text = stringResource(R.string.badge_room),
                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
