@@ -56,6 +56,9 @@ dependencies {
 
     // ViewModel para Compose
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    
+    // Navigation Compose
+    implementation(libs.androidx.navigation.compose)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

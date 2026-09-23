@@ -33,4 +33,30 @@
 
     <string name="msg_success_registration">✓ Usuario registrado correctamente</string>
     <string name="msg_error_saving">No fue posible guardar el usuario</string>
+
+    <!-- Welcome Screen -->
+    <string name="msg_welcome_desc">Tu sistema integral para la administración eficiente de tienda y bodega.</string>
+    <string name="btn_start">Iniciar</string>
+
+    <!-- Login Screen -->
+    <string name="title_login">Iniciar sesión</string>
+    <string name="label_user">Usuario</string>
+    <string name="placeholder_user">Ej. admin</string>
+    <string name="label_password">Contraseña</string>
+    <string name="placeholder_password">••••••••</string>
+    <string name="btn_login">Ingresar</string>
+    <string name="btn_register_link">Registrar usuario</string>
+    <string name="msg_academic_login">Aviso: Acceso provisional en versión académica.</string>
+
+    <!-- Home Screen -->
+    <string name="title_home">Inicio</string>
+    <string name="menu_calendar">Calendario</string>
+    <string name="menu_suppliers">Proveedores</string>
+    <string name="menu_employees">Empleados</string>
+    <string name="menu_clients">Clientes</string>
+    <string name="menu_register_user">Registrar usuario</string>
+    <string name="menu_edit_profile">Editar perfil</string>
+    <string name="menu_inventory">Inventario (Próximamente)</string>
+    <string name="menu_movements">Movimientos (Próximamente)</string>
+    <string name="menu_logout">Cerrar sesión</string>
 </resources>
