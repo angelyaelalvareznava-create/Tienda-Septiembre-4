@@ -1,10 +1,16 @@
 package com.example.tiendita.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.tiendita.R
+import com.example.tiendita.ui.demo.NexoSampleData
+import com.example.tiendita.ui.screens.calendar.CalendarScreen
+import com.example.tiendita.ui.screens.profile.EditProfileScreen
+import com.example.tiendita.ui.screens.common.EntityDirectoryScreen
 import com.example.tiendita.ui.screens.common.FeaturePlaceholderScreen
 import com.example.tiendita.ui.screens.home.HomeScreen
 import com.example.tiendita.ui.screens.login.LoginScreen
@@ -70,39 +76,37 @@ fun NexoNavGraph(
         }
 
         composable(NexoDestination.Calendar) {
-            FeaturePlaceholderScreen(
-                title = "Calendario",
-                description = "Esta funcionalidad estará disponible en la próxima versión.",
-                onBack = { navController.popBackStack() }
-            )
+            CalendarScreen(onBack = { navController.popBackStack() })
         }
         composable(NexoDestination.Suppliers) {
-            FeaturePlaceholderScreen(
-                title = "Proveedores",
-                description = "Esta funcionalidad estará disponible en la próxima versión.",
+            EntityDirectoryScreen(
+                title = stringResource(R.string.title_suppliers),
+                items = NexoSampleData.suppliers,
+                emptyMessage = stringResource(R.string.msg_empty_suppliers),
+                loadMoreLabel = stringResource(R.string.btn_load_more_suppliers),
                 onBack = { navController.popBackStack() }
             )
         }
         composable(NexoDestination.Employees) {
-            FeaturePlaceholderScreen(
-                title = "Empleados",
-                description = "Esta funcionalidad estará disponible en la próxima versión.",
+            EntityDirectoryScreen(
+                title = stringResource(R.string.title_employees),
+                items = NexoSampleData.employees,
+                emptyMessage = stringResource(R.string.msg_empty_employees),
+                loadMoreLabel = stringResource(R.string.btn_load_more_employees),
                 onBack = { navController.popBackStack() }
             )
         }
         composable(NexoDestination.Clients) {
-            FeaturePlaceholderScreen(
-                title = "Clientes",
-                description = "Esta funcionalidad estará disponible en la próxima versión.",
+            EntityDirectoryScreen(
+                title = stringResource(R.string.title_clients),
+                items = NexoSampleData.clients,
+                emptyMessage = stringResource(R.string.msg_empty_clients),
+                loadMoreLabel = stringResource(R.string.btn_load_more_clients),
                 onBack = { navController.popBackStack() }
             )
         }
         composable(NexoDestination.EditProfile) {
-            FeaturePlaceholderScreen(
-                title = "Editar Perfil",
-                description = "Esta funcionalidad estará disponible en la próxima versión.",
-                onBack = { navController.popBackStack() }
-            )
+            EditProfileScreen(onBack = { navController.popBackStack() })
         }
         composable(NexoDestination.Inventory) {
             FeaturePlaceholderScreen(

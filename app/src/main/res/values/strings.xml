@@ -59,4 +59,46 @@
     <string name="menu_inventory">Inventario (Próximamente)</string>
     <string name="menu_movements">Movimientos (Próximamente)</string>
     <string name="menu_logout">Cerrar sesión</string>
+
+    <!-- Directories -->
+    <string name="title_suppliers">Proveedores</string>
+    <string name="title_employees">Empleados</string>
+    <string name="title_clients">Clientes</string>
+
+    <string name="btn_load_more_suppliers">Más proveedores…</string>
+    <string name="btn_load_more_employees">Más empleados…</string>
+    <string name="btn_load_more_clients">Más clientes…</string>
+
+    <string name="msg_empty_suppliers">No hay proveedores registrados.</string>
+    <string name="msg_empty_employees">No hay empleados registrados.</string>
+    <string name="msg_empty_clients">No hay clientes registrados.</string>
+
+    <string name="msg_detail_future_phase">Detalle disponible en una fase posterior</string>
+
+    <!-- Calendar Screen -->
+    <string name="title_calendar">Calendario</string>
+    <string name="btn_prev_month">Mes anterior</string>
+    <string name="btn_next_month">Mes siguiente</string>
+    <string name="day_sun">Dom</string>
+    <string name="day_mon">Lun</string>
+    <string name="day_tue">Mar</string>
+    <string name="day_wed">Mié</string>
+    <string name="day_thu">Jue</string>
+    <string name="day_fri">Vie</string>
+    <string name="day_sat">Sáb</string>
+    <string name="msg_select_date">Selecciona una fecha para consultar sus actividades.</string>
+    <string name="msg_no_activities">No hay actividades programadas para esta fecha.</string>
+
+    <!-- Edit Profile Screen -->
+    <string name="title_edit_profile">Editar datos</string>
+    <string name="label_email">Correo electrónico</string>
+    <string name="btn_change_photo">Cambiar foto</string>
+    <string name="btn_apply_changes">Aplicar cambios</string>
+    <string name="msg_demo_mode">Modo demostración: los cambios se conservarán únicamente mientras esta pantalla permanezca abierta.</string>
+    <string name="msg_changes_applied">Cambios aplicados temporalmente en esta sesión.</string>
+    <string name="msg_photo_future_phase">La selección de imagen estará disponible en una fase posterior.</string>
+
+    <string name="error_email_required">El correo es obligatorio</string>
+    <string name="error_email_invalid">El correo no es válido</string>
+    <string name="error_name_min_length">El nombre debe tener al menos 3 caracteres</string>
 </resources>
