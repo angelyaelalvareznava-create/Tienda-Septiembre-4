@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "GameShelf"
+rootProject.name = "NexoStock"
 include(":app")
  

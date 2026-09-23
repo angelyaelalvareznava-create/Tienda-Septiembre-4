@@ -49,8 +49,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tiendita.database.AppDatabase
 import com.example.tiendita.repository.UserRepository
-import com.example.tiendita.ui.components.GameShelfTextField
-import com.example.tiendita.ui.theme.GameShelfTheme
+import com.example.tiendita.ui.components.NexoTextField
+import com.example.tiendita.ui.components.AdminButton
+import com.example.tiendita.ui.components.AdminCard
+import com.example.tiendita.ui.components.NexoTopBar
+import com.example.tiendita.ui.components.ScreenBackground
+import com.example.tiendita.ui.components.AvatarIcon
+import com.example.tiendita.ui.theme.NexoStockTheme
 import com.example.tiendita.viewmodel.UserFormEvent
 import com.example.tiendita.viewmodel.UserViewModel
 import com.example.tiendita.viewmodel.UserViewModelFactory
@@ -59,7 +64,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            GameShelfTheme(dynamicColor = false) {
+            NexoStockTheme(dynamicColor = false) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val context = LocalContext.current
                     val database = remember { AppDatabase.getDatabase(context.applicationContext) }
@@ -105,170 +110,134 @@ fun UserFormScreen(viewModel: UserViewModel) {
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            MaterialTheme.colorScheme.primary,
-                            MaterialTheme.colorScheme.primaryContainer,
-                            MaterialTheme.colorScheme.background
-                        )
-                    )
-                )
-                .padding(innerPadding)
-        ) {
+        ScreenBackground(modifier = Modifier.padding(innerPadding)) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 18.dp, vertical = 22.dp),
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Encabezado de la aplicación
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(92.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f),
-                    shadowElevation = 8.dp
+                NexoTopBar(title = stringResource(R.string.title_nexostock))
+
+                Column(
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 22.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.title_gameshelf),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(Modifier.height(2.dp))
-                        Text(
-                            text = stringResource(R.string.subtitle_user_registration),
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(18.dp))
-
-                // Tarjeta principal
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(28.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
+                    Text(
+                        text = stringResource(R.string.subtitle_admin_control),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 18.dp)
                     )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(22.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        RowSectionHeader()
 
-                        Divider(
-                            color = MaterialTheme.colorScheme.outlineVariant,
-                            thickness = 1.dp
-                        )
-
-                        Text(
-                            text = stringResource(R.string.title_personal_info),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.desc_personal_info),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        GameShelfTextField(
-                            value = state.nombre,
-                            onValueChange = { viewModel.onEvent(UserFormEvent.OnNombreChanged(it)) },
-                            label = stringResource(R.string.label_name),
-                            placeholder = stringResource(R.string.placeholder_name),
-                            errorMessage = state.errorNombre,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-                        )
-
-                        GameShelfTextField(
-                            value = state.apellidos,
-                            onValueChange = { viewModel.onEvent(UserFormEvent.OnApellidosChanged(it)) },
-                            label = stringResource(R.string.label_last_name),
-                            placeholder = stringResource(R.string.placeholder_last_name),
-                            errorMessage = state.errorApellidos,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-                        )
-
-                        GameShelfTextField(
-                            value = state.direccion,
-                            onValueChange = { viewModel.onEvent(UserFormEvent.OnDireccionChanged(it)) },
-                            label = stringResource(R.string.label_address),
-                            placeholder = stringResource(R.string.placeholder_address),
-                            errorMessage = state.errorDireccion,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-                        )
-
-                        GameShelfTextField(
-                            value = state.telefono,
-                            onValueChange = { viewModel.onEvent(UserFormEvent.OnTelefonoChanged(it)) },
-                            label = stringResource(R.string.label_phone),
-                            placeholder = stringResource(R.string.placeholder_phone),
-                            errorMessage = state.errorTelefono,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Phone,
-                                imeAction = ImeAction.Done
-                            )
-                        )
-
-                        Spacer(Modifier.height(2.dp))
-
-                        Button(
-                            onClick = { viewModel.onEvent(UserFormEvent.OnSubmit) },
-                            enabled = state.isFormValid && !state.guardando,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            )
+                    AdminCard {
+                        Column(
+                            modifier = Modifier.padding(22.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
-                            if (state.guardando) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.width(22.dp),
-                                    strokeWidth = 2.dp,
-                                    color = MaterialTheme.colorScheme.onPrimary
+                            RowSectionHeader()
+
+                            Divider(
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                                thickness = 1.dp
+                            )
+
+                            Text(
+                                text = stringResource(R.string.title_personal_info),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = stringResource(R.string.desc_personal_info),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            NexoTextField(
+                                value = state.nombre,
+                                onValueChange = { viewModel.onEvent(UserFormEvent.OnNombreChanged(it)) },
+                                label = stringResource(R.string.label_name),
+                                placeholder = stringResource(R.string.placeholder_name),
+                                errorMessage = state.errorNombre,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                            )
+
+                            NexoTextField(
+                                value = state.apellidos,
+                                onValueChange = { viewModel.onEvent(UserFormEvent.OnApellidosChanged(it)) },
+                                label = stringResource(R.string.label_last_name),
+                                placeholder = stringResource(R.string.placeholder_last_name),
+                                errorMessage = state.errorApellidos,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                            )
+
+                            NexoTextField(
+                                value = state.direccion,
+                                onValueChange = { viewModel.onEvent(UserFormEvent.OnDireccionChanged(it)) },
+                                label = stringResource(R.string.label_address),
+                                placeholder = stringResource(R.string.placeholder_address),
+                                errorMessage = state.errorDireccion,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                            )
+
+                            NexoTextField(
+                                value = state.telefono,
+                                onValueChange = { viewModel.onEvent(UserFormEvent.OnTelefonoChanged(it)) },
+                                label = stringResource(R.string.label_phone),
+                                placeholder = stringResource(R.string.placeholder_phone),
+                                errorMessage = state.errorTelefono,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Phone,
+                                    imeAction = ImeAction.Done
                                 )
-                                Spacer(Modifier.width(10.dp))
-                                Text(stringResource(R.string.btn_saving))
+                            )
+
+                            Spacer(Modifier.height(2.dp))
+
+                            if (state.guardando) {
+                                Button(
+                                    onClick = { },
+                                    enabled = false,
+                                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        disabledContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.width(22.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Spacer(Modifier.width(10.dp))
+                                    Text(stringResource(R.string.btn_saving))
+                                }
                             } else {
-                                Text(stringResource(R.string.btn_save_user), fontWeight = FontWeight.Bold)
+                                AdminButton(
+                                    text = stringResource(R.string.btn_save_user),
+                                    onClick = { viewModel.onEvent(UserFormEvent.OnSubmit) },
+                                    enabled = state.isFormValid
+                                )
                             }
+
+                            Text(
+                                text = stringResource(R.string.msg_room_storage),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
                         }
-
-                        Text(
-                            text = stringResource(R.string.msg_room_storage),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
                     }
-                }
 
-                Spacer(Modifier.height(14.dp))
-                Text(
-                    text = stringResource(R.string.msg_complete_fields),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                    Spacer(Modifier.height(14.dp))
+                    Text(
+                        text = stringResource(R.string.msg_complete_fields),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
     }
@@ -280,20 +249,7 @@ private fun RowSectionHeader() {
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Surface(
-            modifier = Modifier.height(42.dp).width(42.dp),
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primaryContainer
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    text = "U",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
+        AvatarIcon(initials = "U")
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(

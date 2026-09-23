@@ -8,20 +8,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val LightColors = lightColorScheme(
-    primary = Primary,
-    secondary = Secondary,
-    background = Color(0xFFF4F7FB),
-    surface = SurfaceLight,
-    primaryContainer = Color(0xFFDCEBFF)
+    primary = NexoPrimary,
+    onPrimary = NexoOnPrimary,
+    background = NexoBackground,
+    surface = NexoSurface,
+    onSurface = NexoOnSurface,
+    primaryContainer = NexoPrimaryContainer,
+    onPrimaryContainer = NexoSurfaceDark,
+    outline = NexoOutline,
+    outlineVariant = NexoOutline
 )
 
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFF90CAF9),
-    secondary = Color(0xFF80CBC4)
+    primary = NexoPrimaryContainer,
+    onPrimary = NexoSurfaceDark,
+    background = NexoSurfaceDark,
+    surface = NexoSurface,
+    onSurface = NexoOnSurface,
+    primaryContainer = NexoPrimary,
+    onPrimaryContainer = NexoOnPrimary,
+    outline = NexoOutline,
+    outlineVariant = NexoOutline
 )
 
 @Composable
-fun GameShelfTheme(
+fun NexoStockTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit

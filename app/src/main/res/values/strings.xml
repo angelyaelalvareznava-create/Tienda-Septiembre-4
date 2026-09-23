@@ -1,6 +1,7 @@
 <resources>
-    <string name="app_name">GameShelf</string>
-    <string name="title_gameshelf">GAMESHELF</string>
+    <string name="app_name">NexoStock</string>
+    <string name="title_nexostock">NEXOSTOCK</string>
+    <string name="subtitle_admin_control">Control administrativo</string>
     <string name="subtitle_user_registration">Registro de usuario</string>
     <string name="section_new_registration">Nuevo registro</string>
     <string name="desc_secure_form">Formulario seguro y sencillo</string>
