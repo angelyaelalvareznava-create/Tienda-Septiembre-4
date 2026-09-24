@@ -30,5 +30,10 @@ fun getDaysInMonth(year: Int, month: Int): List<Int?> {
         grid.add(day)
     }
     
+    // Espacios vacíos al final para completar semanas completas de 7 días
+    while (grid.size % 7 != 0) {
+        grid.add(null)
+    }
+
     return grid
 }

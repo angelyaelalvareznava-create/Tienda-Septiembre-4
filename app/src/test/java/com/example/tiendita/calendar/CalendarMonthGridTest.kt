@@ -58,4 +58,16 @@ class CalendarMonthGridTest {
         assertNull(janDays[3]) // Mié
         assertEquals(1, janDays[4]) // Jue
     }
+
+    @Test
+    fun `grid size is always a multiple of 7`() {
+        val days1 = getDaysInMonth(2024, 1) // Febrero bisiesto
+        assertEquals(0, days1.size % 7)
+
+        val days2 = getDaysInMonth(2026, 8) // Septiembre
+        assertEquals(0, days2.size % 7)
+
+        val days3 = getDaysInMonth(2026, 9) // Octubre
+        assertEquals(0, days3.size % 7)
+    }
 }
