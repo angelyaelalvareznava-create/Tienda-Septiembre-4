@@ -100,5 +100,13 @@
 
     <string name="error_email_required">El correo es obligatorio</string>
     <string name="error_email_invalid">El correo no es válido</string>
+    <string name="placeholder_email">Ej. correo@example.com</string>
     <string name="error_name_min_length">El nombre debe tener al menos 3 caracteres</string>
+    <string name="error_username_min_length">El usuario debe tener al menos 2 caracteres</string>
+    <string name="error_username_invalid">El usuario solo debe contener letras</string>
+    <string name="error_password_min_length">La contraseña debe tener al menos 8 caracteres</string>
+    <string name="error_password_digit">La contraseña debe incluir al menos un número</string>
+    <string name="error_password_special">La contraseña debe incluir al menos un carácter especial</string>
+    <string name="error_password_uppercase">La contraseña debe incluir al menos una letra mayúscula</string>
+    <string name="error_password_space">La contraseña no debe contener espacios</string>
 </resources>

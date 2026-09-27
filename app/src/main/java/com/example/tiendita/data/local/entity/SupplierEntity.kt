@@ -9,23 +9,24 @@ data class SupplierEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     
-    val name: String,
+    @ColumnInfo(name = "first_name")
+    val firstName: String,
     
-    @ColumnInfo(name = "contact_name")
-    val contactName: String?,
-    
-    val email: String?,
+    @ColumnInfo(name = "last_name")
+    val lastName: String,
     
     val phone: String,
     
     val address: String?,
     
+    val email: String?,
+    
     @ColumnInfo(name = "is_active", defaultValue = "1")
     val isActive: Boolean = true,
     
     @ColumnInfo(name = "created_at")
-    val createdAt: Long,
+    val createdAt: Long = System.currentTimeMillis(),
     
     @ColumnInfo(name = "updated_at")
-    val updatedAt: Long
+    val updatedAt: Long = System.currentTimeMillis()
 )

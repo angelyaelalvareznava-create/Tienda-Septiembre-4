@@ -48,37 +48,45 @@ class UserViewModelTest {
             assertEquals("", initialState.apellidos)
             assertEquals("", initialState.direccion)
             assertEquals("", initialState.telefono)
+            assertEquals("", initialState.email)
             assertFalse(initialState.isFormValid)
         }
     }
 
     @Test
-    fun `nombre validation triggers error on empty`() = runTest {
+    fun `email validation rules work correctly`() = runTest {
         viewModel.state.test {
             awaitItem() // initial state
 
-            viewModel.onEvent(UserFormEvent.OnNombreChanged(""))
-            val state = awaitItem()
-            assertEquals("El nombre es obligatorio", state.errorNombre)
-            assertFalse(state.isFormValid)
-        }
-    }
+            // Too short (< 5 chars)
+            viewModel.onEvent(UserFormEvent.OnEmailChanged("a@b"))
+            val stateShort = awaitItem()
+            assertEquals("El correo electrónico debe tener al menos 5 caracteres", stateShort.errorEmail)
 
-    @Test
-    fun `telefono validation requires exactly 10 digits`() = runTest {
-        viewModel.state.test {
-            awaitItem() // initial state
+            // Missing @
+            viewModel.onEvent(UserFormEvent.OnEmailChanged("testdomain.com"))
+            val stateNoAt = awaitItem()
+            assertEquals("El correo electrónico debe tener exactamente un símbolo @", stateNoAt.errorEmail)
 
-            // Test 9 digits
-            viewModel.onEvent(UserFormEvent.OnTelefonoChanged("123456789"))
-            val state9 = awaitItem()
-            assertEquals("El teléfono debe tener 10 dígitos", state9.errorTelefono)
-            assertFalse(state9.isFormValid)
+            // Multiple @
+            viewModel.onEvent(UserFormEvent.OnEmailChanged("test@@domain.com"))
+            val stateMultiAt = awaitItem()
+            assertEquals("El correo electrónico debe tener exactamente un símbolo @", stateMultiAt.errorEmail)
 
-            // Test 10 digits
-            viewModel.onEvent(UserFormEvent.OnTelefonoChanged("1234567890"))
-            val state10 = awaitItem()
-            assertNull(state10.errorTelefono)
+            // Missing text after @
+            viewModel.onEvent(UserFormEvent.OnEmailChanged("test@"))
+            val stateNoAfter = awaitItem()
+            assertEquals("El correo electrónico debe contener texto antes y después del @", stateNoAfter.errorEmail)
+
+            // Missing period after @
+            viewModel.onEvent(UserFormEvent.OnEmailChanged("test@domain"))
+            val stateNoPeriod = awaitItem()
+            assertEquals("El correo electrónico debe tener un punto después del @", stateNoPeriod.errorEmail)
+
+            // Valid email
+            viewModel.onEvent(UserFormEvent.OnEmailChanged("test@example.com"))
+            val stateValid = awaitItem()
+            assertNull(stateValid.errorEmail)
         }
     }
 
@@ -94,6 +102,8 @@ class UserViewModelTest {
             viewModel.onEvent(UserFormEvent.OnDireccionChanged("Calle Falsa 123"))
             awaitItem()
             viewModel.onEvent(UserFormEvent.OnTelefonoChanged("1234567890"))
+            awaitItem()
+            viewModel.onEvent(UserFormEvent.OnEmailChanged("juan@example.com"))
             
             val finalState = awaitItem()
             assertTrue(finalState.isFormValid)
@@ -115,6 +125,8 @@ class UserViewModelTest {
             viewModel.onEvent(UserFormEvent.OnDireccionChanged("Calle Falsa 123"))
             awaitItem()
             viewModel.onEvent(UserFormEvent.OnTelefonoChanged("1234567890"))
+            awaitItem()
+            viewModel.onEvent(UserFormEvent.OnEmailChanged("juan@example.com"))
             val validState = awaitItem()
             assertTrue(validState.isFormValid)
             

@@ -1,5 +1,6 @@
 package com.example.tiendita.ui.screens.registration
 
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.imeNestedScroll
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,7 +23,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -29,8 +34,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -45,7 +52,9 @@ import com.example.tiendita.ui.components.NexoTopBar
 import com.example.tiendita.ui.components.ScreenBackground
 import com.example.tiendita.viewmodel.UserFormEvent
 import com.example.tiendita.viewmodel.UserViewModel
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun UserFormScreen(
     viewModel: UserViewModel,
@@ -53,6 +62,9 @@ fun UserFormScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
+    val density = LocalDensity.current
     val successMsg = stringResource(R.string.msg_success_registration)
 
     LaunchedEffect(state.registroExitoso) {
@@ -75,141 +87,194 @@ fun UserFormScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-    ) { innerPadding ->
-        ScreenBackground(modifier = Modifier.padding(innerPadding)) {
+    ScreenBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .imePadding()
+                .imeNestedScroll(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            NexoTopBar(
+                title = stringResource(R.string.title_nexostock),
+                onBackClick = onBack
+            )
+
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier.padding(horizontal = 18.dp, vertical = 22.dp)
             ) {
-                NexoTopBar(
-                    title = stringResource(R.string.title_nexostock),
-                    onBackClick = onBack
+                Text(
+                    text = stringResource(R.string.subtitle_admin_control),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 18.dp)
                 )
 
-                Column(
-                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 22.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.subtitle_admin_control),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(bottom = 18.dp)
-                    )
+                AdminCard {
+                    Column(
+                        modifier = Modifier.padding(22.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        RowSectionHeader()
 
-                    AdminCard {
-                        Column(
-                            modifier = Modifier.padding(22.dp),
-                            verticalArrangement = Arrangement.spacedBy(14.dp)
-                        ) {
-                            RowSectionHeader()
+                        Divider(
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                            thickness = 1.dp
+                        )
 
-                            Divider(
-                                color = MaterialTheme.colorScheme.outlineVariant,
-                                thickness = 1.dp
-                            )
+                        Text(
+                            text = stringResource(R.string.title_personal_info),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.desc_personal_info),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
 
-                            Text(
-                                text = stringResource(R.string.title_personal_info),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = stringResource(R.string.desc_personal_info),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        NexoTextField(
+                            value = state.nombre,
+                            onValueChange = { viewModel.onEvent(UserFormEvent.OnNombreChanged(it)) },
+                            label = stringResource(R.string.label_name),
+                            placeholder = stringResource(R.string.placeholder_name),
+                            errorMessage = state.errorNombre,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                        )
 
-                            NexoTextField(
-                                value = state.nombre,
-                                onValueChange = { viewModel.onEvent(UserFormEvent.OnNombreChanged(it)) },
-                                label = stringResource(R.string.label_name),
-                                placeholder = stringResource(R.string.placeholder_name),
-                                errorMessage = state.errorNombre,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-                            )
-
-                            NexoTextField(
-                                value = state.apellidos,
-                                onValueChange = { viewModel.onEvent(UserFormEvent.OnApellidosChanged(it)) },
-                                label = stringResource(R.string.label_last_name),
-                                placeholder = stringResource(R.string.placeholder_last_name),
-                                errorMessage = state.errorApellidos,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-                            )
-
-                            NexoTextField(
-                                value = state.direccion,
-                                onValueChange = { viewModel.onEvent(UserFormEvent.OnDireccionChanged(it)) },
-                                label = stringResource(R.string.label_address),
-                                placeholder = stringResource(R.string.placeholder_address),
-                                errorMessage = state.errorDireccion,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-                            )
-
-                            NexoTextField(
-                                value = state.telefono,
-                                onValueChange = { viewModel.onEvent(UserFormEvent.OnTelefonoChanged(it)) },
-                                label = stringResource(R.string.label_phone),
-                                placeholder = stringResource(R.string.placeholder_phone),
-                                errorMessage = state.errorTelefono,
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Phone,
-                                    imeAction = ImeAction.Done
-                                )
-                            )
-
-                            Spacer(Modifier.height(2.dp))
-
-                            if (state.guardando) {
-                                Button(
-                                    onClick = { },
-                                    enabled = false,
-                                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                        disabledContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.width(22.dp),
-                                        strokeWidth = 2.dp,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                    Spacer(Modifier.width(10.dp))
-                                    Text(stringResource(R.string.btn_saving))
+                        NexoTextField(
+                            value = state.apellidos,
+                            onValueChange = { viewModel.onEvent(UserFormEvent.OnApellidosChanged(it)) },
+                            label = stringResource(R.string.label_last_name),
+                            placeholder = stringResource(R.string.placeholder_last_name),
+                            errorMessage = state.errorApellidos,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            modifier = Modifier.onFocusChanged {
+                                if (it.isFocused) {
+                                    coroutineScope.launch {
+                                        scrollState.animateScrollTo(with(density) { 100.dp.toPx().toInt() })
+                                    }
                                 }
-                            } else {
-                                AdminButton(
-                                    text = stringResource(R.string.btn_save_user),
-                                    onClick = { viewModel.onEvent(UserFormEvent.OnSubmit) },
-                                    enabled = state.isFormValid
-                                )
                             }
+                        )
 
-                            Text(
-                                text = stringResource(R.string.msg_room_storage),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                        NexoTextField(
+                            value = state.direccion,
+                            onValueChange = { viewModel.onEvent(UserFormEvent.OnDireccionChanged(it)) },
+                            label = stringResource(R.string.label_address),
+                            placeholder = stringResource(R.string.placeholder_address),
+                            errorMessage = state.errorDireccion,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            modifier = Modifier.onFocusChanged {
+                                if (it.isFocused) {
+                                    coroutineScope.launch {
+                                        scrollState.animateScrollTo(with(density) { 200.dp.toPx().toInt() })
+                                    }
+                                }
+                            }
+                        )
+
+                        NexoTextField(
+                            value = state.telefono,
+                            onValueChange = { viewModel.onEvent(UserFormEvent.OnTelefonoChanged(it)) },
+                            label = stringResource(R.string.label_phone),
+                            placeholder = stringResource(R.string.placeholder_phone),
+                            errorMessage = state.errorTelefono,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Phone,
+                                imeAction = ImeAction.Next
+                            ),
+                            modifier = Modifier.onFocusChanged {
+                                if (it.isFocused) {
+                                    coroutineScope.launch {
+                                        scrollState.animateScrollTo(with(density) { 300.dp.toPx().toInt() })
+                                    }
+                                }
+                            }
+                        )
+
+                        NexoTextField(
+                            value = state.email,
+                            onValueChange = { viewModel.onEvent(UserFormEvent.OnEmailChanged(it)) },
+                            label = stringResource(R.string.label_email),
+                            placeholder = stringResource(R.string.placeholder_email),
+                            errorMessage = state.errorEmail,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email,
+                                imeAction = ImeAction.Done
+                            ),
+                            modifier = Modifier.onFocusChanged {
+                                if (it.isFocused) {
+                                    coroutineScope.launch {
+                                        scrollState.animateScrollTo(with(density) { 400.dp.toPx().toInt() })
+                                    }
+                                }
+                            }
+                        )
+
+                        Spacer(Modifier.height(2.dp))
+
+                        if (state.guardando) {
+                            Button(
+                                onClick = { },
+                                enabled = false,
+                                modifier = Modifier.fillMaxWidth().height(56.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    disabledContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.width(22.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Spacer(Modifier.width(10.dp))
+                                Text(stringResource(R.string.btn_saving))
+                            }
+                        } else {
+                            AdminButton(
+                                text = stringResource(R.string.btn_save_user),
+                                onClick = { viewModel.onEvent(UserFormEvent.OnSubmit) },
+                                enabled = true
                             )
                         }
-                    }
 
-                    Spacer(Modifier.height(14.dp))
-                    Text(
-                        text = stringResource(R.string.msg_complete_fields),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                        Text(
+                            text = stringResource(R.string.msg_room_storage),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    }
                 }
+
+                Spacer(Modifier.height(14.dp))
+                Text(
+                    text = stringResource(R.string.msg_complete_fields),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
+        }
+
+        // Top pop-up message (Snackbar) so it is never obscured by the keyboard
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(16.dp)
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = if (state.registroExitoso) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer,
+                contentColor = if (state.registroExitoso) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+            )
         }
     }
 }

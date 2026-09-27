@@ -8,14 +8,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -35,6 +43,7 @@ import com.example.tiendita.ui.components.NexoTextField
 import com.example.tiendita.ui.components.NexoTopBar
 import com.example.tiendita.ui.components.ScreenBackground
 import com.example.tiendita.ui.theme.NexoStockTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -43,14 +52,32 @@ fun LoginScreen(
 ) {
     var username by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
-    val isFormValid = username.isNotBlank() && password.isNotBlank()
+    val usernameError = when {
+        username.isEmpty() -> null
+        username.length < 2 -> stringResource(R.string.error_username_min_length)
+        !username.all { it.isLetter() } -> stringResource(R.string.error_username_invalid)
+        else -> null
+    }
+
+    val passwordError = when {
+        password.isEmpty() -> null
+        password.any { it.isWhitespace() } -> stringResource(R.string.error_password_space)
+        password.length < 8 -> stringResource(R.string.error_password_min_length)
+        password.none { it.isDigit() } -> stringResource(R.string.error_password_digit)
+        password.none { it.isUpperCase() } -> stringResource(R.string.error_password_uppercase)
+        password.none { !it.isLetterOrDigit() } -> stringResource(R.string.error_password_special)
+        else -> null
+    }
 
     ScreenBackground {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             NexoTopBar(title = stringResource(R.string.title_login))
@@ -80,6 +107,7 @@ fun LoginScreen(
                             onValueChange = { username = it },
                             label = stringResource(R.string.label_user),
                             placeholder = stringResource(R.string.placeholder_user),
+                            errorMessage = usernameError,
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                         )
 
@@ -88,6 +116,7 @@ fun LoginScreen(
                             onValueChange = { password = it },
                             label = stringResource(R.string.label_password),
                             placeholder = stringResource(R.string.placeholder_password),
+                            errorMessage = passwordError,
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Password,
                                 imeAction = ImeAction.Done
@@ -99,8 +128,27 @@ fun LoginScreen(
 
                         AdminButton(
                             text = stringResource(R.string.btn_login),
-                            onClick = onLogin,
-                            enabled = isFormValid
+                            onClick = {
+                                val errorMsg = when {
+                                    username.isBlank() && password.isBlank() -> "Por favor ingresa usuario y contraseña"
+                                    username.isBlank() -> "El usuario es obligatorio"
+                                    password.isBlank() -> "La contraseña es obligatoria"
+                                    usernameError != null -> usernameError
+                                    passwordError != null -> passwordError
+                                    else -> null
+                                }
+                                if (errorMsg != null) {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = errorMsg,
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
+                                } else {
+                                    onLogin()
+                                }
+                            },
+                            enabled = true
                         )
 
                         Text(
@@ -122,6 +170,21 @@ fun LoginScreen(
                     }
                 }
             }
+        }
+
+        // Pop-up message positioned at the top so it is never obscured by the software keyboard
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(16.dp)
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer
+            )
         }
     }
 }

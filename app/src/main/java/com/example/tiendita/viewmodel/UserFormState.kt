@@ -5,10 +5,12 @@ data class UserFormState(
     val apellidos: String = "",
     val direccion: String = "",
     val telefono: String = "",
+    val email: String = "",
     val errorNombre: String? = null,
     val errorApellidos: String? = null,
     val errorDireccion: String? = null,
     val errorTelefono: String? = null,
+    val errorEmail: String? = null,
     val guardando: Boolean = false,
     val registroExitoso: Boolean = false,
     val errorGeneral: String? = null
@@ -18,10 +20,12 @@ data class UserFormState(
                 apellidos.isNotBlank() &&
                 direccion.isNotBlank() &&
                 telefono.length == 10 &&
+                email.isNotBlank() &&
                 errorNombre == null &&
                 errorApellidos == null &&
                 errorDireccion == null &&
-                errorTelefono == null
+                errorTelefono == null &&
+                errorEmail == null
 }
 
 sealed class UserFormEvent {
@@ -29,6 +33,7 @@ sealed class UserFormEvent {
     data class OnApellidosChanged(val apellidos: String) : UserFormEvent()
     data class OnDireccionChanged(val direccion: String) : UserFormEvent()
     data class OnTelefonoChanged(val telefono: String) : UserFormEvent()
+    data class OnEmailChanged(val email: String) : UserFormEvent()
     object OnSubmit : UserFormEvent()
     object ResetSuccessState : UserFormEvent()
     object ResetErrorState : UserFormEvent()

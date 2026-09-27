@@ -11,6 +11,7 @@ import androidx.room.PrimaryKey
  * @property apellidos Apellidos del usuario.
  * @property direccion Dirección del usuario.
  * @property telefono Teléfono de contacto del usuario.
+ * @property email Correo electrónico del usuario.
  */
 @Entity(tableName = "users")
 data class User(
@@ -19,5 +20,6 @@ data class User(
     val nombre: String,
     val apellidos: String,
     val direccion: String,
-    val telefono: String
+    val telefono: String,
+    val email: String
 )
