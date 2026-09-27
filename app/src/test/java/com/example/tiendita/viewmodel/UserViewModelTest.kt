@@ -44,6 +44,7 @@ class UserViewModelTest {
     fun `initial state is correct`() = runTest {
         viewModel.state.test {
             val initialState = awaitItem()
+            assertFalse(initialState.roleSelected)
             assertEquals("", initialState.username)
             assertEquals("", initialState.nombre)
             assertEquals("", initialState.apellidos)
@@ -100,13 +101,13 @@ class UserViewModelTest {
         viewModel.state.test {
             awaitItem() // initial state
 
+            viewModel.onEvent(UserFormEvent.OnSelectUserType("Empleado"))
+            awaitItem()
             viewModel.onEvent(UserFormEvent.OnUsernameChanged("admin123"))
             awaitItem()
             viewModel.onEvent(UserFormEvent.OnNombreChanged("Juan"))
             awaitItem()
             viewModel.onEvent(UserFormEvent.OnApellidosChanged("Perez"))
-            awaitItem()
-            viewModel.onEvent(UserFormEvent.OnDireccionChanged("Calle Falsa 123"))
             awaitItem()
             viewModel.onEvent(UserFormEvent.OnTelefonoChanged("1234567890"))
             awaitItem()
@@ -131,13 +132,13 @@ class UserViewModelTest {
             awaitItem() // initial state
             
             // Set valid data
+            viewModel.onEvent(UserFormEvent.OnSelectUserType("Empleado"))
+            awaitItem()
             viewModel.onEvent(UserFormEvent.OnUsernameChanged("admin123"))
             awaitItem()
             viewModel.onEvent(UserFormEvent.OnNombreChanged("Juan"))
             awaitItem()
             viewModel.onEvent(UserFormEvent.OnApellidosChanged("Perez"))
-            awaitItem()
-            viewModel.onEvent(UserFormEvent.OnDireccionChanged("Calle Falsa 123"))
             awaitItem()
             viewModel.onEvent(UserFormEvent.OnTelefonoChanged("1234567890"))
             awaitItem()

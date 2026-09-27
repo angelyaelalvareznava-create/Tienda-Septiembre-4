@@ -1,5 +1,6 @@
 package com.example.tiendita.ui.screens.registration
 
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.tiendita.R
 import com.example.tiendita.ui.components.AdminButton
@@ -107,221 +109,282 @@ fun UserFormScreen(
         ) {
             NexoTopBar(
                 title = stringResource(R.string.title_nexostock),
-                onBackClick = onBack
-            )
-
-            Column(
-                modifier = Modifier.padding(horizontal = 18.dp, vertical = 22.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.subtitle_admin_control),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(bottom = 18.dp)
-                )
-
-                AdminCard {
-                    Column(
-                        modifier = Modifier.padding(22.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        RowSectionHeader()
-
-                        Divider(
-                            color = MaterialTheme.colorScheme.outlineVariant,
-                            thickness = 1.dp
-                        )
-
-                        Text(
-                            text = stringResource(R.string.title_personal_info),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.desc_personal_info),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        UserRoleDropdown(
-                            selectedRole = state.userType,
-                            onRoleSelected = { viewModel.onEvent(UserFormEvent.OnUserTypeChanged(it)) }
-                        )
-
-                        NexoTextField(
-                            value = state.username,
-                            onValueChange = { viewModel.onEvent(UserFormEvent.OnUsernameChanged(it)) },
-                            label = stringResource(R.string.label_username),
-                            placeholder = stringResource(R.string.placeholder_username),
-                            errorMessage = state.errorUsername,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-                        )
-
-                        NexoTextField(
-                            value = state.nombre,
-                            onValueChange = { viewModel.onEvent(UserFormEvent.OnNombreChanged(it)) },
-                            label = stringResource(R.string.label_name),
-                            placeholder = stringResource(R.string.placeholder_name),
-                            errorMessage = state.errorNombre,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-                        )
-
-                        NexoTextField(
-                            value = state.apellidos,
-                            onValueChange = { viewModel.onEvent(UserFormEvent.OnApellidosChanged(it)) },
-                            label = stringResource(R.string.label_last_name),
-                            placeholder = stringResource(R.string.placeholder_last_name),
-                            errorMessage = state.errorApellidos,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                            modifier = Modifier.onFocusChanged {
-                                if (it.isFocused) {
-                                    coroutineScope.launch {
-                                        scrollState.animateScrollTo(with(density) { 150.dp.toPx().toInt() })
-                                    }
-                                }
-                            }
-                        )
-
-                        NexoTextField(
-                            value = state.direccion,
-                            onValueChange = { viewModel.onEvent(UserFormEvent.OnDireccionChanged(it)) },
-                            label = stringResource(R.string.label_address),
-                            placeholder = stringResource(R.string.placeholder_address),
-                            errorMessage = state.errorDireccion,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                            modifier = Modifier.onFocusChanged {
-                                if (it.isFocused) {
-                                    coroutineScope.launch {
-                                        scrollState.animateScrollTo(with(density) { 250.dp.toPx().toInt() })
-                                    }
-                                }
-                            }
-                        )
-
-                        NexoTextField(
-                            value = state.telefono,
-                            onValueChange = { viewModel.onEvent(UserFormEvent.OnTelefonoChanged(it)) },
-                            label = stringResource(R.string.label_phone),
-                            placeholder = stringResource(R.string.placeholder_phone),
-                            errorMessage = state.errorTelefono,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Phone,
-                                imeAction = ImeAction.Next
-                            ),
-                            modifier = Modifier.onFocusChanged {
-                                if (it.isFocused) {
-                                    coroutineScope.launch {
-                                        scrollState.animateScrollTo(with(density) { 350.dp.toPx().toInt() })
-                                    }
-                                }
-                            }
-                        )
-
-                        NexoTextField(
-                            value = state.email,
-                            onValueChange = { viewModel.onEvent(UserFormEvent.OnEmailChanged(it)) },
-                            label = stringResource(R.string.label_email),
-                            placeholder = stringResource(R.string.placeholder_email),
-                            errorMessage = state.errorEmail,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Email,
-                                imeAction = ImeAction.Next
-                            ),
-                            modifier = Modifier.onFocusChanged {
-                                if (it.isFocused) {
-                                    coroutineScope.launch {
-                                        scrollState.animateScrollTo(with(density) { 450.dp.toPx().toInt() })
-                                    }
-                                }
-                            }
-                        )
-
-                        NexoTextField(
-                            value = state.password,
-                            onValueChange = { viewModel.onEvent(UserFormEvent.OnPasswordChanged(it)) },
-                            label = stringResource(R.string.label_password),
-                            placeholder = stringResource(R.string.placeholder_password),
-                            errorMessage = state.errorPassword,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Password,
-                                imeAction = ImeAction.Next
-                            ),
-                            visualTransformation = PasswordVisualTransformation(),
-                            modifier = Modifier.onFocusChanged {
-                                if (it.isFocused) {
-                                    coroutineScope.launch {
-                                        scrollState.animateScrollTo(with(density) { 550.dp.toPx().toInt() })
-                                    }
-                                }
-                            }
-                        )
-
-                        NexoTextField(
-                            value = state.confirmPassword,
-                            onValueChange = { viewModel.onEvent(UserFormEvent.OnConfirmPasswordChanged(it)) },
-                            label = stringResource(R.string.label_confirm_password),
-                            placeholder = stringResource(R.string.placeholder_confirm_password),
-                            errorMessage = state.errorConfirmPassword,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Password,
-                                imeAction = ImeAction.Done
-                            ),
-                            visualTransformation = PasswordVisualTransformation(),
-                            modifier = Modifier.onFocusChanged {
-                                if (it.isFocused) {
-                                    coroutineScope.launch {
-                                        scrollState.animateScrollTo(with(density) { 650.dp.toPx().toInt() })
-                                    }
-                                }
-                            }
-                        )
-
-                        Spacer(Modifier.height(2.dp))
-
-                        if (state.guardando) {
-                            Button(
-                                onClick = { },
-                                enabled = false,
-                                modifier = Modifier.fillMaxWidth().height(56.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    disabledContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.width(22.dp),
-                                    strokeWidth = 2.dp,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                                Spacer(Modifier.width(10.dp))
-                                Text(stringResource(R.string.btn_saving))
-                            }
-                        } else {
-                            AdminButton(
-                                text = stringResource(R.string.btn_save_user),
-                                onClick = { viewModel.onEvent(UserFormEvent.OnSubmit) },
-                                enabled = true
-                            )
-                        }
-
-                        Text(
-                            text = stringResource(R.string.msg_room_storage),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
+                onBackClick = {
+                    if (state.roleSelected) {
+                        viewModel.onEvent(UserFormEvent.OnBackToRoleSelection)
+                    } else {
+                        onBack()
                     }
                 }
+            )
 
-                Spacer(Modifier.height(14.dp))
-                Text(
-                    text = stringResource(R.string.msg_complete_fields),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            if (!state.roleSelected) {
+                // Step 1: Role Selection Screen
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AdminCard {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Tipo de Registro",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Selecciona el rol o tipo de usuario que deseas registrar:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            AdminButton(
+                                text = "Registrar Empleado",
+                                onClick = { viewModel.onEvent(UserFormEvent.OnSelectUserType("Empleado")) }
+                            )
+                            AdminButton(
+                                text = "Registrar Cliente",
+                                onClick = { viewModel.onEvent(UserFormEvent.OnSelectUserType("Cliente")) }
+                            )
+                            AdminButton(
+                                text = "Registrar Proveedor",
+                                onClick = { viewModel.onEvent(UserFormEvent.OnSelectUserType("Proveedor")) }
+                            )
+                        }
+                    }
+                }
+            } else {
+                // Step 2: Usual Registration Form (without role combo box)
+                Column(
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 22.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Nuevo Registro: ${state.userType}",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = 18.dp)
+                        )
+                        Text(
+                            text = "Cambiar rol",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clickable { viewModel.onEvent(UserFormEvent.OnBackToRoleSelection) }
+                                .padding(8.dp)
+                        )
+                    }
+
+                    AdminCard {
+                        Column(
+                            modifier = Modifier.padding(22.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            RowSectionHeader()
+
+                            Divider(
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                                thickness = 1.dp
+                            )
+
+                            Text(
+                                text = stringResource(R.string.title_personal_info),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            NexoTextField(
+                                value = state.username,
+                                onValueChange = { viewModel.onEvent(UserFormEvent.OnUsernameChanged(it)) },
+                                label = stringResource(R.string.label_username),
+                                placeholder = stringResource(R.string.placeholder_username),
+                                errorMessage = state.errorUsername,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                            )
+
+                            NexoTextField(
+                                value = state.nombre,
+                                onValueChange = { viewModel.onEvent(UserFormEvent.OnNombreChanged(it)) },
+                                label = stringResource(R.string.label_name),
+                                placeholder = stringResource(R.string.placeholder_name),
+                                errorMessage = state.errorNombre,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                            )
+
+                            NexoTextField(
+                                value = state.apellidos,
+                                onValueChange = { viewModel.onEvent(UserFormEvent.OnApellidosChanged(it)) },
+                                label = stringResource(R.string.label_last_name),
+                                placeholder = stringResource(R.string.placeholder_last_name),
+                                errorMessage = state.errorApellidos,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                                modifier = Modifier.onFocusChanged {
+                                    if (it.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.animateScrollTo(with(density) { 150.dp.toPx().toInt() })
+                                        }
+                                    }
+                                }
+                            )
+
+                            if (state.userType == "Empleado") {
+                                // Position combo box for Employee: Encargado, Auxiliar, Administración
+                                PositionDropdown(
+                                    selectedPosition = state.position,
+                                    onPositionSelected = { viewModel.onEvent(UserFormEvent.OnPositionChanged(it)) }
+                                )
+                            } else {
+                                // Address field for Client / Supplier
+                                NexoTextField(
+                                    value = state.direccion,
+                                    onValueChange = { viewModel.onEvent(UserFormEvent.OnDireccionChanged(it)) },
+                                    label = stringResource(R.string.label_address),
+                                    placeholder = stringResource(R.string.placeholder_address),
+                                    errorMessage = state.errorDireccion,
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                                    modifier = Modifier.onFocusChanged {
+                                        if (it.isFocused) {
+                                            coroutineScope.launch {
+                                                scrollState.animateScrollTo(with(density) { 250.dp.toPx().toInt() })
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+
+                            NexoTextField(
+                                value = state.telefono,
+                                onValueChange = { viewModel.onEvent(UserFormEvent.OnTelefonoChanged(it)) },
+                                label = stringResource(R.string.label_phone),
+                                placeholder = stringResource(R.string.placeholder_phone),
+                                errorMessage = state.errorTelefono,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Phone,
+                                    imeAction = ImeAction.Next
+                                ),
+                                modifier = Modifier.onFocusChanged {
+                                    if (it.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.animateScrollTo(with(density) { 350.dp.toPx().toInt() })
+                                        }
+                                    }
+                                }
+                            )
+
+                            NexoTextField(
+                                value = state.email,
+                                onValueChange = { viewModel.onEvent(UserFormEvent.OnEmailChanged(it)) },
+                                label = stringResource(R.string.label_email),
+                                placeholder = stringResource(R.string.placeholder_email),
+                                errorMessage = state.errorEmail,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Email,
+                                    imeAction = ImeAction.Next
+                                ),
+                                modifier = Modifier.onFocusChanged {
+                                    if (it.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.animateScrollTo(with(density) { 450.dp.toPx().toInt() })
+                                        }
+                                    }
+                                }
+                            )
+
+                            NexoTextField(
+                                value = state.password,
+                                onValueChange = { viewModel.onEvent(UserFormEvent.OnPasswordChanged(it)) },
+                                label = stringResource(R.string.label_password),
+                                placeholder = stringResource(R.string.placeholder_password),
+                                errorMessage = state.errorPassword,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Password,
+                                    imeAction = ImeAction.Next
+                                ),
+                                visualTransformation = PasswordVisualTransformation(),
+                                modifier = Modifier.onFocusChanged {
+                                    if (it.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.animateScrollTo(with(density) { 550.dp.toPx().toInt() })
+                                        }
+                                    }
+                                }
+                            )
+
+                            NexoTextField(
+                                value = state.confirmPassword,
+                                onValueChange = { viewModel.onEvent(UserFormEvent.OnConfirmPasswordChanged(it)) },
+                                label = stringResource(R.string.label_confirm_password),
+                                placeholder = stringResource(R.string.placeholder_confirm_password),
+                                errorMessage = state.errorConfirmPassword,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Password,
+                                    imeAction = ImeAction.Done
+                                ),
+                                visualTransformation = PasswordVisualTransformation(),
+                                modifier = Modifier.onFocusChanged {
+                                    if (it.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.animateScrollTo(with(density) { 650.dp.toPx().toInt() })
+                                        }
+                                    }
+                                }
+                            )
+
+                            Spacer(Modifier.height(2.dp))
+
+                            if (state.guardando) {
+                                Button(
+                                    onClick = { },
+                                    enabled = false,
+                                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        disabledContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.width(22.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Spacer(Modifier.width(10.dp))
+                                    Text(stringResource(R.string.btn_saving))
+                                }
+                            } else {
+                                AdminButton(
+                                    text = stringResource(R.string.btn_save_user),
+                                    onClick = { viewModel.onEvent(UserFormEvent.OnSubmit) },
+                                    enabled = true
+                                )
+                            }
+
+                            Text(
+                                text = stringResource(R.string.msg_room_storage),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -344,12 +407,12 @@ fun UserFormScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserRoleDropdown(
-    selectedRole: String,
-    onRoleSelected: (String) -> Unit
+fun PositionDropdown(
+    selectedPosition: String,
+    onPositionSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val roles = listOf("Empleado", "Cliente", "Proveedor")
+    val positions = listOf("Encargado", "Auxiliar", "Administración")
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -357,10 +420,10 @@ fun UserRoleDropdown(
         modifier = Modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            value = selectedRole,
+            value = selectedPosition,
             onValueChange = {},
             readOnly = true,
-            label = { Text("Tipo de Rol / Registro") },
+            label = { Text("Posición / Puesto") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -372,11 +435,11 @@ fun UserRoleDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            roles.forEach { role ->
+            positions.forEach { pos ->
                 DropdownMenuItem(
-                    text = { Text(role) },
+                    text = { Text(pos) },
                     onClick = {
-                        onRoleSelected(role)
+                        onPositionSelected(pos)
                         expanded = false
                     }
                 )

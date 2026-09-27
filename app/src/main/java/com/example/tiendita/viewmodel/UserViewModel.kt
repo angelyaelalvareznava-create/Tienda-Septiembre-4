@@ -20,22 +20,18 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
     fun onEvent(event: UserFormEvent) {
         when (event) {
+            is UserFormEvent.OnSelectUserType -> {
+                _state.update { it.copy(roleSelected = true, userType = event.userType) }
+            }
+            is UserFormEvent.OnPositionChanged -> {
+                _state.update { it.copy(position = event.position) }
+            }
+            UserFormEvent.OnBackToRoleSelection -> {
+                _state.update { UserFormState() }
+            }
             is UserFormEvent.OnUsernameChanged -> {
                 val formatError = validateUsernameFormat(event.username)
                 _state.update { it.copy(username = event.username, errorUsername = formatError) }
-                if (formatError == null && event.username.isNotBlank()) {
-                    viewModelScope.launch {
-                        try {
-                            val existing = repository.getUserByUsername(event.username.trim())
-                            val uniqueError = if (existing != null) "Este nombre de usuario ya está registrado. Por favor elige otro." else null
-                            if (_state.value.username == event.username) {
-                                _state.update { it.copy(errorUsername = uniqueError) }
-                            }
-                        } catch (e: Exception) {
-                            // ignore
-                        }
-                    }
-                }
             }
             is UserFormEvent.OnNombreChanged -> {
                 val error = when {
@@ -57,6 +53,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             }
             is UserFormEvent.OnDireccionChanged -> {
                 val error = when {
+                    _state.value.userType == "Empleado" -> null
                     event.direccion.isBlank() -> "La dirección es obligatoria"
                     event.direccion.length <= 10 -> "La dirección debe tener más de 10 caracteres"
                     event.direccion.length >= 150 -> "La dirección debe tener menos de 150 caracteres"
@@ -75,9 +72,6 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             is UserFormEvent.OnEmailChanged -> {
                 val error = validateEmail(event.email)
                 _state.update { it.copy(email = event.email, errorEmail = error) }
-            }
-            is UserFormEvent.OnUserTypeChanged -> {
-                _state.update { it.copy(userType = event.userType) }
             }
             is UserFormEvent.OnPasswordChanged -> {
                 val error = validatePassword(event.password)
@@ -165,6 +159,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             else -> null
         }
         val direccionError = when {
+            currentState.userType == "Empleado" -> null
             currentState.direccion.isBlank() -> "La dirección es obligatoria"
             currentState.direccion.length <= 10 -> "La dirección debe tener más de 10 caracteres"
             currentState.direccion.length >= 150 -> "La dirección debe tener menos de 150 caracteres"
@@ -233,7 +228,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                         username = currentState.username.trim(),
                         nombre = currentState.nombre.trim(),
                         apellidos = currentState.apellidos.trim(),
-                        direccion = currentState.direccion.trim(),
+                        direccion = if (currentState.userType == "Empleado") currentState.position else currentState.direccion.trim(),
                         telefono = currentState.telefono.trim(),
                         email = currentState.email.trim(),
                         password = currentState.password.trim()
@@ -247,10 +242,10 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                             EmployeeEntity(
                                 firstName = currentState.nombre.trim(),
                                 lastName = currentState.apellidos.trim(),
-                                position = "General",
+                                position = currentState.position,
                                 email = currentState.email.trim(),
                                 phone = currentState.telefono.trim(),
-                                address = currentState.direccion.trim(),
+                                address = null,
                                 hireDate = System.currentTimeMillis(),
                                 active = true
                             )
