@@ -18,6 +18,6 @@ interface ClientDao {
     @Query("SELECT * FROM clients WHERE id = :id")
     suspend fun getClientById(id: Long): ClientEntity?
 
-    @Query("SELECT * FROM clients WHERE active = 1")
+    @Query("SELECT * FROM clients")
     fun getActiveClientsFlow(): Flow<List<ClientEntity>>
 }

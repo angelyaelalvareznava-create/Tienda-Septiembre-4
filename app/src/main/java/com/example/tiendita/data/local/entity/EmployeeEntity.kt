@@ -26,7 +26,7 @@ data class EmployeeEntity(
     @ColumnInfo(name = "hire_date")
     val hireDate: Long?,
     
-    @ColumnInfo(defaultValue = "1")
+    @ColumnInfo(name = "active")
     val active: Boolean = true,
     
     @ColumnInfo(name = "created_at")

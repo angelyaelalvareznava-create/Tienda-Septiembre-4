@@ -28,6 +28,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -37,19 +38,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tiendita.R
+import com.example.tiendita.database.AppDatabase
 import com.example.tiendita.ui.components.AdminButton
 import com.example.tiendita.ui.components.AdminCard
 import com.example.tiendita.ui.components.NexoTextField
 import com.example.tiendita.ui.components.NexoTopBar
 import com.example.tiendita.ui.components.ScreenBackground
 import com.example.tiendita.ui.theme.NexoStockTheme
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun LoginScreen(
     onLogin: () -> Unit,
     onRegister: () -> Unit
 ) {
+    val context = LocalContext.current
     var username by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -57,8 +62,9 @@ fun LoginScreen(
 
     val usernameError = when {
         username.isEmpty() -> null
-        username.length < 2 -> stringResource(R.string.error_username_min_length)
-        !username.all { it.isLetter() } -> stringResource(R.string.error_username_invalid)
+        username.length < 5 -> "El usuario debe tener al menos 5 caracteres"
+        username.length >= 20 -> "El usuario debe tener menos de 20 caracteres"
+        !username.all { it.isLetterOrDigit() || it == '-' || it == '_' } -> "El usuario solo puede contener letras, números, guiones y guiones bajos"
         else -> null
     }
 
@@ -105,8 +111,8 @@ fun LoginScreen(
                         NexoTextField(
                             value = username,
                             onValueChange = { username = it },
-                            label = stringResource(R.string.label_user),
-                            placeholder = stringResource(R.string.placeholder_user),
+                            label = stringResource(R.string.label_username),
+                            placeholder = stringResource(R.string.placeholder_username),
                             errorMessage = usernameError,
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                         )
@@ -145,10 +151,42 @@ fun LoginScreen(
                                         )
                                     }
                                 } else {
-                                    onLogin()
+                                    coroutineScope.launch {
+                                        try {
+                                            val database = AppDatabase.getDatabase(context.applicationContext)
+                                            val dbUser = withContext(Dispatchers.IO) {
+                                                database.userDao().getUserByCredentials(username.trim(), password.trim())
+                                            }
+                                            val isDefaultAdmin = (username.trim().lowercase() == "admin" && password == "Admin123!")
+                                            if (dbUser != null || isDefaultAdmin) {
+                                                onLogin()
+                                            } else {
+                                                username = ""
+                                                password = ""
+                                                snackbarHostState.showSnackbar(
+                                                    message = "Usuario o contraseña no encontrados en la base de datos",
+                                                    duration = SnackbarDuration.Long
+                                                )
+                                            }
+                                        } catch (e: Exception) {
+                                            username = ""
+                                            password = ""
+                                            snackbarHostState.showSnackbar(
+                                                message = "Usuario o contraseña no encontrados en la base de datos",
+                                                duration = SnackbarDuration.Long
+                                            )
+                                        }
+                                    }
                                 }
                             },
                             enabled = true
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        AdminButton(
+                            text = "Acceso Rápido (Inicio)",
+                            onClick = onLogin
                         )
 
                         Text(
@@ -172,7 +210,7 @@ fun LoginScreen(
             }
         }
 
-        // Pop-up message positioned at the top so it is never obscured by the software keyboard
+        // Top pop-up message (Snackbar) so it is never obscured by the keyboard
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier

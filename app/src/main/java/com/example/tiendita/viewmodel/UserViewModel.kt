@@ -20,6 +20,23 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
     fun onEvent(event: UserFormEvent) {
         when (event) {
+            is UserFormEvent.OnUsernameChanged -> {
+                val formatError = validateUsernameFormat(event.username)
+                _state.update { it.copy(username = event.username, errorUsername = formatError) }
+                if (formatError == null && event.username.isNotBlank()) {
+                    viewModelScope.launch {
+                        try {
+                            val existing = repository.getUserByUsername(event.username.trim())
+                            val uniqueError = if (existing != null) "Este nombre de usuario ya está registrado. Por favor elige otro." else null
+                            if (_state.value.username == event.username) {
+                                _state.update { it.copy(errorUsername = uniqueError) }
+                            }
+                        } catch (e: Exception) {
+                            // ignore
+                        }
+                    }
+                }
+            }
             is UserFormEvent.OnNombreChanged -> {
                 val error = when {
                     event.nombre.isBlank() -> "El nombre es obligatorio"
@@ -62,6 +79,23 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             is UserFormEvent.OnUserTypeChanged -> {
                 _state.update { it.copy(userType = event.userType) }
             }
+            is UserFormEvent.OnPasswordChanged -> {
+                val error = validatePassword(event.password)
+                val confirmError = if (_state.value.confirmPassword.isNotEmpty() && _state.value.confirmPassword != event.password) {
+                    "Las contraseñas no coinciden"
+                } else {
+                    null
+                }
+                _state.update { it.copy(password = event.password, errorPassword = error, errorConfirmPassword = confirmError) }
+            }
+            is UserFormEvent.OnConfirmPasswordChanged -> {
+                val error = if (event.confirmPassword != _state.value.password) {
+                    "Las contraseñas no coinciden"
+                } else {
+                    null
+                }
+                _state.update { it.copy(confirmPassword = event.confirmPassword, errorConfirmPassword = error) }
+            }
             UserFormEvent.OnSubmit -> {
                 submitData()
             }
@@ -71,6 +105,16 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             UserFormEvent.ResetErrorState -> {
                 _state.update { it.copy(errorGeneral = null) }
             }
+        }
+    }
+
+    private fun validateUsernameFormat(username: String): String? {
+        return when {
+            username.isBlank() -> "El nombre de usuario es obligatorio"
+            username.length < 5 -> "El usuario debe tener al menos 5 caracteres"
+            username.length >= 20 -> "El usuario debe tener menos de 20 caracteres"
+            !username.all { it.isLetterOrDigit() || it == '-' || it == '_' } -> "El usuario solo puede contener letras, números, guiones y guiones bajos"
+            else -> null
         }
     }
 
@@ -92,9 +136,22 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
         }
     }
 
+    private fun validatePassword(password: String): String? {
+        return when {
+            password.isBlank() -> "La contraseña es obligatoria"
+            password.any { it.isWhitespace() } -> "La contraseña no debe contener espacios"
+            password.length < 8 -> "La contraseña debe tener al menos 8 caracteres"
+            password.none { it.isDigit() } -> "La contraseña debe incluir al menos un número"
+            password.none { it.isUpperCase() } -> "La contraseña debe incluir al menos una letra mayúscula"
+            password.none { !it.isLetterOrDigit() } -> "La contraseña debe incluir al menos un carácter especial"
+            else -> null
+        }
+    }
+
     private fun submitData() {
         val currentState = _state.value
         
+        val usernameFormatError = validateUsernameFormat(currentState.username)
         val nombreError = when {
             currentState.nombre.isBlank() -> "El nombre es obligatorio"
             currentState.nombre.length < 2 -> "El nombre debe tener al menos 2 caracteres"
@@ -121,37 +178,65 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             else -> null
         }
         val emailError = validateEmail(currentState.email)
-
-        val errors = listOfNotNull(nombreError, apellidosError, direccionError, telefonoError, emailError)
-
-        if (errors.isNotEmpty()) {
-            _state.update { 
-                it.copy(
-                    errorNombre = nombreError,
-                    errorApellidos = apellidosError,
-                    errorDireccion = direccionError,
-                    errorTelefono = telefonoError,
-                    errorEmail = emailError,
-                    errorGeneral = errors.first()
-                ) 
-            }
-            return
+        val passwordError = validatePassword(currentState.password)
+        val confirmPasswordError = when {
+            currentState.confirmPassword.isBlank() -> "La confirmación de contraseña es obligatoria"
+            currentState.confirmPassword != currentState.password -> "Las contraseñas no coinciden"
+            else -> null
         }
 
-        if (currentState.guardando) return
-
-        _state.update { it.copy(guardando = true) }
-        
         viewModelScope.launch {
+            val existingUser = try {
+                repository.getUserByUsername(currentState.username.trim())
+            } catch (e: Exception) {
+                null
+            }
+            val usernameUniqueError = if (existingUser != null) "Este nombre de usuario ya está registrado. Por favor elige otro." else null
+
+            val errors = listOfNotNull(
+                usernameFormatError,
+                usernameUniqueError,
+                nombreError,
+                apellidosError,
+                direccionError,
+                telefonoError,
+                emailError,
+                passwordError,
+                confirmPasswordError
+            )
+
+            if (errors.isNotEmpty()) {
+                _state.update { 
+                    it.copy(
+                        errorUsername = usernameFormatError ?: usernameUniqueError,
+                        errorNombre = nombreError,
+                        errorApellidos = apellidosError,
+                        errorDireccion = direccionError,
+                        errorTelefono = telefonoError,
+                        errorEmail = emailError,
+                        errorPassword = passwordError,
+                        errorConfirmPassword = confirmPasswordError,
+                        errorGeneral = errors.first()
+                    ) 
+                }
+                return@launch
+            }
+
+            if (currentState.guardando) return@launch
+
+            _state.update { it.copy(guardando = true) }
+            
             try {
                 // 1. Insert into users table
                 repository.insertUser(
                     User(
+                        username = currentState.username.trim(),
                         nombre = currentState.nombre.trim(),
                         apellidos = currentState.apellidos.trim(),
                         direccion = currentState.direccion.trim(),
                         telefono = currentState.telefono.trim(),
-                        email = currentState.email.trim()
+                        email = currentState.email.trim(),
+                        password = currentState.password.trim()
                     )
                 )
 
@@ -206,7 +291,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                 _state.update { 
                     it.copy(
                         guardando = false, 
-                        errorGeneral = "No fue posible guardar el usuario"
+                        errorGeneral = "Error al guardar el usuario: ${e.localizedMessage ?: e.message ?: "Desconocido"}"
                     ) 
                 }
             }

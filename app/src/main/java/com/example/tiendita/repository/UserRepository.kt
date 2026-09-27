@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 interface UserRepository {
     suspend fun insertUser(user: User): Long
     suspend fun getAllUsers(): List<User>
+    suspend fun getUserByUsername(username: String): User?
     suspend fun insertClient(client: ClientEntity): Long
     suspend fun insertEmployee(employee: EmployeeEntity): Long
     suspend fun insertSupplier(supplier: SupplierEntity): Long
@@ -27,6 +28,12 @@ class UserRepositoryImpl(private val database: AppDatabase) : UserRepository {
     override suspend fun getAllUsers(): List<User> {
         return withContext(Dispatchers.IO) {
             database.userDao().getAllUsers()
+        }
+    }
+
+    override suspend fun getUserByUsername(username: String): User? {
+        return withContext(Dispatchers.IO) {
+            database.userDao().getUserByUsername(username)
         }
     }
 

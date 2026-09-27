@@ -12,8 +12,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -22,18 +22,29 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tiendita.R
+import com.example.tiendita.data.local.entity.ClientEntity
 import com.example.tiendita.database.AppDatabase
 import com.example.tiendita.ui.components.AdminCard
 import com.example.tiendita.ui.components.EntityItemRow
 import com.example.tiendita.ui.components.NexoTopBar
 import com.example.tiendita.ui.components.ScreenBackground
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 @Composable
 fun ClientsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
-    val database = remember { AppDatabase.getDatabase(context) }
-    val clients by database.clientDao().getActiveClientsFlow().collectAsState(initial = emptyList())
+    val clients by produceState(initialValue = emptyList<ClientEntity>()) {
+        try {
+            val database = AppDatabase.getDatabase(context)
+            database.clientDao().getActiveClientsFlow()
+                .catch { emit(emptyList()) }
+                .collect { value = it }
+        } catch (e: Exception) {
+            value = emptyList()
+        }
+    }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val snackbarMessage = stringResource(R.string.msg_detail_future_phase)

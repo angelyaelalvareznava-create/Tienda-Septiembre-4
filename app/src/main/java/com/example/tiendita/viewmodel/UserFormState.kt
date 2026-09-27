@@ -1,41 +1,57 @@
 package com.example.tiendita.viewmodel
 
 data class UserFormState(
+    val username: String = "",
     val nombre: String = "",
     val apellidos: String = "",
     val direccion: String = "",
     val telefono: String = "",
     val email: String = "",
     val userType: String = "Empleado", // "Empleado", "Cliente", "Proveedor"
+    val password: String = "",
+    val confirmPassword: String = "",
+    val errorUsername: String? = null,
     val errorNombre: String? = null,
     val errorApellidos: String? = null,
     val errorDireccion: String? = null,
     val errorTelefono: String? = null,
     val errorEmail: String? = null,
+    val errorPassword: String? = null,
+    val errorConfirmPassword: String? = null,
     val guardando: Boolean = false,
     val registroExitoso: Boolean = false,
     val errorGeneral: String? = null
 ) {
     val isFormValid: Boolean
-        get() = nombre.isNotBlank() &&
+        get() = username.isNotBlank() &&
+                nombre.isNotBlank() &&
                 apellidos.isNotBlank() &&
                 direccion.isNotBlank() &&
                 telefono.length == 10 &&
                 email.isNotBlank() &&
+                password.isNotBlank() &&
+                confirmPassword.isNotBlank() &&
+                password == confirmPassword &&
+                errorUsername == null &&
                 errorNombre == null &&
                 errorApellidos == null &&
                 errorDireccion == null &&
                 errorTelefono == null &&
-                errorEmail == null
+                errorEmail == null &&
+                errorPassword == null &&
+                errorConfirmPassword == null
 }
 
 sealed class UserFormEvent {
+    data class OnUsernameChanged(val username: String) : UserFormEvent()
     data class OnNombreChanged(val nombre: String) : UserFormEvent()
     data class OnApellidosChanged(val apellidos: String) : UserFormEvent()
     data class OnDireccionChanged(val direccion: String) : UserFormEvent()
     data class OnTelefonoChanged(val telefono: String) : UserFormEvent()
     data class OnEmailChanged(val email: String) : UserFormEvent()
     data class OnUserTypeChanged(val userType: String) : UserFormEvent()
+    data class OnPasswordChanged(val password: String) : UserFormEvent()
+    data class OnConfirmPasswordChanged(val confirmPassword: String) : UserFormEvent()
     object OnSubmit : UserFormEvent()
     object ResetSuccessState : UserFormEvent()
     object ResetErrorState : UserFormEvent()

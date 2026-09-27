@@ -50,6 +50,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.tiendita.R
 import com.example.tiendita.ui.components.AdminButton
@@ -150,6 +151,15 @@ fun UserFormScreen(
                         )
 
                         NexoTextField(
+                            value = state.username,
+                            onValueChange = { viewModel.onEvent(UserFormEvent.OnUsernameChanged(it)) },
+                            label = stringResource(R.string.label_username),
+                            placeholder = stringResource(R.string.placeholder_username),
+                            errorMessage = state.errorUsername,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                        )
+
+                        NexoTextField(
                             value = state.nombre,
                             onValueChange = { viewModel.onEvent(UserFormEvent.OnNombreChanged(it)) },
                             label = stringResource(R.string.label_name),
@@ -217,12 +227,52 @@ fun UserFormScreen(
                             errorMessage = state.errorEmail,
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Email,
-                                imeAction = ImeAction.Done
+                                imeAction = ImeAction.Next
                             ),
                             modifier = Modifier.onFocusChanged {
                                 if (it.isFocused) {
                                     coroutineScope.launch {
                                         scrollState.animateScrollTo(with(density) { 450.dp.toPx().toInt() })
+                                    }
+                                }
+                            }
+                        )
+
+                        NexoTextField(
+                            value = state.password,
+                            onValueChange = { viewModel.onEvent(UserFormEvent.OnPasswordChanged(it)) },
+                            label = stringResource(R.string.label_password),
+                            placeholder = stringResource(R.string.placeholder_password),
+                            errorMessage = state.errorPassword,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,
+                                imeAction = ImeAction.Next
+                            ),
+                            visualTransformation = PasswordVisualTransformation(),
+                            modifier = Modifier.onFocusChanged {
+                                if (it.isFocused) {
+                                    coroutineScope.launch {
+                                        scrollState.animateScrollTo(with(density) { 550.dp.toPx().toInt() })
+                                    }
+                                }
+                            }
+                        )
+
+                        NexoTextField(
+                            value = state.confirmPassword,
+                            onValueChange = { viewModel.onEvent(UserFormEvent.OnConfirmPasswordChanged(it)) },
+                            label = stringResource(R.string.label_confirm_password),
+                            placeholder = stringResource(R.string.placeholder_confirm_password),
+                            errorMessage = state.errorConfirmPassword,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,
+                                imeAction = ImeAction.Done
+                            ),
+                            visualTransformation = PasswordVisualTransformation(),
+                            modifier = Modifier.onFocusChanged {
+                                if (it.isFocused) {
+                                    coroutineScope.launch {
+                                        scrollState.animateScrollTo(with(density) { 650.dp.toPx().toInt() })
                                     }
                                 }
                             }

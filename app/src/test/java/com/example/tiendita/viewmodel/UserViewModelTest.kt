@@ -44,11 +44,14 @@ class UserViewModelTest {
     fun `initial state is correct`() = runTest {
         viewModel.state.test {
             val initialState = awaitItem()
+            assertEquals("", initialState.username)
             assertEquals("", initialState.nombre)
             assertEquals("", initialState.apellidos)
             assertEquals("", initialState.direccion)
             assertEquals("", initialState.telefono)
             assertEquals("", initialState.email)
+            assertEquals("", initialState.password)
+            assertEquals("", initialState.confirmPassword)
             assertFalse(initialState.isFormValid)
         }
     }
@@ -92,9 +95,13 @@ class UserViewModelTest {
 
     @Test
     fun `form becomes valid when all fields are correct`() = runTest {
+        whenever(repository.getUserByUsername(any())).thenReturn(null)
+
         viewModel.state.test {
             awaitItem() // initial state
 
+            viewModel.onEvent(UserFormEvent.OnUsernameChanged("admin123"))
+            awaitItem()
             viewModel.onEvent(UserFormEvent.OnNombreChanged("Juan"))
             awaitItem()
             viewModel.onEvent(UserFormEvent.OnApellidosChanged("Perez"))
@@ -104,6 +111,10 @@ class UserViewModelTest {
             viewModel.onEvent(UserFormEvent.OnTelefonoChanged("1234567890"))
             awaitItem()
             viewModel.onEvent(UserFormEvent.OnEmailChanged("juan@example.com"))
+            awaitItem()
+            viewModel.onEvent(UserFormEvent.OnPasswordChanged("Password123!"))
+            awaitItem()
+            viewModel.onEvent(UserFormEvent.OnConfirmPasswordChanged("Password123!"))
             
             val finalState = awaitItem()
             assertTrue(finalState.isFormValid)
@@ -112,12 +123,16 @@ class UserViewModelTest {
 
     @Test
     fun `onSubmit with valid data calls repository and updates state`() = runTest {
+        whenever(repository.getUserByUsername(any())).thenReturn(null)
         whenever(repository.insertUser(any())).thenReturn(1L)
+        whenever(repository.insertEmployee(any())).thenReturn(1L)
         
         viewModel.state.test {
             awaitItem() // initial state
             
             // Set valid data
+            viewModel.onEvent(UserFormEvent.OnUsernameChanged("admin123"))
+            awaitItem()
             viewModel.onEvent(UserFormEvent.OnNombreChanged("Juan"))
             awaitItem()
             viewModel.onEvent(UserFormEvent.OnApellidosChanged("Perez"))
@@ -127,6 +142,10 @@ class UserViewModelTest {
             viewModel.onEvent(UserFormEvent.OnTelefonoChanged("1234567890"))
             awaitItem()
             viewModel.onEvent(UserFormEvent.OnEmailChanged("juan@example.com"))
+            awaitItem()
+            viewModel.onEvent(UserFormEvent.OnPasswordChanged("Password123!"))
+            awaitItem()
+            viewModel.onEvent(UserFormEvent.OnConfirmPasswordChanged("Password123!"))
             val validState = awaitItem()
             assertTrue(validState.isFormValid)
             

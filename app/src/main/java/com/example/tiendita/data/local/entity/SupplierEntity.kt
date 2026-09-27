@@ -23,7 +23,7 @@ data class SupplierEntity(
     
     val notes: String?,
     
-    @ColumnInfo(defaultValue = "1")
+    @ColumnInfo(name = "active")
     val active: Boolean = true,
     
     @ColumnInfo(name = "created_at")

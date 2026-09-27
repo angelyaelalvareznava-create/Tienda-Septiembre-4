@@ -14,7 +14,7 @@ interface ProductDao {
     @Insert
     suspend fun insertCategory(category: CategoryEntity): Long
 
-    @Query("SELECT * FROM categories WHERE active = 1")
+    @Query("SELECT * FROM categories")
     fun getActiveCategoriesFlow(): Flow<List<CategoryEntity>>
 
     @Insert
@@ -29,7 +29,7 @@ interface ProductDao {
     @Query("SELECT * FROM products WHERE sku = :sku")
     suspend fun getProductBySku(sku: String): ProductEntity?
 
-    @Query("SELECT * FROM products WHERE active = 1")
+    @Query("SELECT * FROM products")
     fun getActiveProductsFlow(): Flow<List<ProductEntity>>
 
     @Insert

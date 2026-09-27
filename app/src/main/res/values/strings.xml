@@ -111,4 +111,9 @@
     <string name="error_password_special">La contraseña debe incluir al menos un carácter especial</string>
     <string name="error_password_uppercase">La contraseña debe incluir al menos una letra mayúscula</string>
     <string name="error_password_space">La contraseña no debe contener espacios</string>
+    <string name="label_confirm_password">Confirmar contraseña</string>
+    <string name="placeholder_confirm_password">••••••••</string>
+    <string name="label_username">Nombre de usuario</string>
+    <string name="placeholder_username">Ej. mi_usuario</string>
+    <string name="error_username_taken">Este nombre de usuario ya está registrado</string>
 </resources>

@@ -1,25 +1,21 @@
 package com.example.tiendita.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-/**
- * Entidad que representa la tabla "users" en la base de datos local (Room).
- *
- * @property id Clave primaria autoincrementable, generada por Room.
- * @property nombre Nombre del usuario.
- * @property apellidos Apellidos del usuario.
- * @property direccion Dirección del usuario.
- * @property telefono Teléfono de contacto del usuario.
- * @property email Correo electrónico del usuario.
- */
-@Entity(tableName = "users")
+@Entity(
+    tableName = "users",
+    indices = [Index(value = ["username"], unique = true)]
+)
 data class User(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+    val username: String,
     val nombre: String,
     val apellidos: String,
     val direccion: String,
     val telefono: String,
-    val email: String
+    val email: String,
+    val password: String
 )
