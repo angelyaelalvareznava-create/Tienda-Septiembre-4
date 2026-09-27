@@ -1,20 +1,20 @@
 package com.example.tiendita.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.tiendita.R
-import com.example.tiendita.ui.demo.NexoSampleData
 import com.example.tiendita.ui.screens.calendar.CalendarScreen
+import com.example.tiendita.ui.screens.clients.ClientsScreen
+import com.example.tiendita.ui.screens.database.DatabaseDataScreen
+import com.example.tiendita.ui.screens.employees.EmployeesScreen
 import com.example.tiendita.ui.screens.profile.EditProfileScreen
-import com.example.tiendita.ui.screens.common.EntityDirectoryScreen
 import com.example.tiendita.ui.screens.common.FeaturePlaceholderScreen
 import com.example.tiendita.ui.screens.home.HomeScreen
 import com.example.tiendita.ui.screens.login.LoginScreen
 import com.example.tiendita.ui.screens.registration.UserFormScreen
+import com.example.tiendita.ui.screens.suppliers.SuppliersScreen
 import com.example.tiendita.ui.screens.welcome.WelcomeScreen
 import com.example.tiendita.viewmodel.UserViewModel
 
@@ -60,6 +60,7 @@ fun NexoNavGraph(
                 onNavigateToEditProfile = { navController.navigate(NexoDestination.EditProfile) },
                 onNavigateToInventory = { navController.navigate(NexoDestination.Inventory) },
                 onNavigateToMovements = { navController.navigate(NexoDestination.Movements) },
+                onNavigateToDatabase = { navController.navigate(NexoDestination.DatabaseInspection) },
                 onLogout = {
                     navController.navigate(NexoDestination.Login) {
                         popUpTo(NexoDestination.Home) { inclusive = true }
@@ -79,31 +80,16 @@ fun NexoNavGraph(
             CalendarScreen(onBack = { navController.popBackStack() })
         }
         composable(NexoDestination.Suppliers) {
-            EntityDirectoryScreen(
-                title = stringResource(R.string.title_suppliers),
-                items = NexoSampleData.suppliers,
-                emptyMessage = stringResource(R.string.msg_empty_suppliers),
-                loadMoreLabel = stringResource(R.string.btn_load_more_suppliers),
-                onBack = { navController.popBackStack() }
-            )
+            SuppliersScreen(onBack = { navController.popBackStack() })
         }
         composable(NexoDestination.Employees) {
-            EntityDirectoryScreen(
-                title = stringResource(R.string.title_employees),
-                items = NexoSampleData.employees,
-                emptyMessage = stringResource(R.string.msg_empty_employees),
-                loadMoreLabel = stringResource(R.string.btn_load_more_employees),
-                onBack = { navController.popBackStack() }
-            )
+            EmployeesScreen(onBack = { navController.popBackStack() })
         }
         composable(NexoDestination.Clients) {
-            EntityDirectoryScreen(
-                title = stringResource(R.string.title_clients),
-                items = NexoSampleData.clients,
-                emptyMessage = stringResource(R.string.msg_empty_clients),
-                loadMoreLabel = stringResource(R.string.btn_load_more_clients),
-                onBack = { navController.popBackStack() }
-            )
+            ClientsScreen(onBack = { navController.popBackStack() })
+        }
+        composable(NexoDestination.DatabaseInspection) {
+            DatabaseDataScreen(onBack = { navController.popBackStack() })
         }
         composable(NexoDestination.EditProfile) {
             EditProfileScreen(onBack = { navController.popBackStack() })

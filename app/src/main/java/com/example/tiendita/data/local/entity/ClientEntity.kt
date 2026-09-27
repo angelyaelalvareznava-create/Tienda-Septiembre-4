@@ -9,20 +9,21 @@ data class ClientEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     
-    @ColumnInfo(name = "first_name")
-    val firstName: String,
+    val name: String,
     
-    @ColumnInfo(name = "last_name")
-    val lastName: String,
+    @ColumnInfo(name = "contact_name")
+    val contactName: String?,
     
-    val phone: String,
-    
-    val address: String?,
+    val phone: String?,
     
     val email: String?,
     
-    @ColumnInfo(name = "is_active", defaultValue = "1")
-    val isActive: Boolean = true,
+    val address: String?,
+    
+    val notes: String?,
+    
+    @ColumnInfo(defaultValue = "1")
+    val active: Boolean = true,
     
     @ColumnInfo(name = "created_at")
     val createdAt: Long = System.currentTimeMillis(),

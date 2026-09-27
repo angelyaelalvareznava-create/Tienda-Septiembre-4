@@ -20,14 +20,14 @@ import com.example.tiendita.data.local.converter.CalendarEventStatus
         ForeignKey(
             entity = UserAccountEntity::class,
             parentColumns = ["id"],
-            childColumns = ["created_by"],
+            childColumns = ["created_by_account_id"],
             onDelete = ForeignKey.RESTRICT,
             onUpdate = ForeignKey.NO_ACTION
         )
     ],
     indices = [
         Index(value = ["employee_id"]),
-        Index(value = ["created_by"]),
+        Index(value = ["created_by_account_id"]),
         Index(value = ["start_at"])
     ]
 )
@@ -50,12 +50,12 @@ data class CalendarEventEntity(
     @ColumnInfo(name = "employee_id")
     val employeeId: Long?,
     
-    @ColumnInfo(name = "created_by")
-    val createdBy: Long,
+    @ColumnInfo(name = "created_by_account_id")
+    val createdByAccountId: Long,
     
     @ColumnInfo(name = "created_at")
-    val createdAt: Long,
+    val createdAt: Long = System.currentTimeMillis(),
     
     @ColumnInfo(name = "updated_at")
-    val updatedAt: Long
+    val updatedAt: Long = System.currentTimeMillis()
 )

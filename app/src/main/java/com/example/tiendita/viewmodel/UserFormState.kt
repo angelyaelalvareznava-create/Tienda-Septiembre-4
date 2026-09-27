@@ -6,6 +6,7 @@ data class UserFormState(
     val direccion: String = "",
     val telefono: String = "",
     val email: String = "",
+    val userType: String = "Empleado", // "Empleado", "Cliente", "Proveedor"
     val errorNombre: String? = null,
     val errorApellidos: String? = null,
     val errorDireccion: String? = null,
@@ -34,6 +35,7 @@ sealed class UserFormEvent {
     data class OnDireccionChanged(val direccion: String) : UserFormEvent()
     data class OnTelefonoChanged(val telefono: String) : UserFormEvent()
     data class OnEmailChanged(val email: String) : UserFormEvent()
+    data class OnUserTypeChanged(val userType: String) : UserFormEvent()
     object OnSubmit : UserFormEvent()
     object ResetSuccessState : UserFormEvent()
     object ResetErrorState : UserFormEvent()

@@ -8,17 +8,16 @@ import com.example.tiendita.data.local.converter.AccountRole
 import com.example.tiendita.data.local.converter.MovementType
 import com.example.tiendita.data.local.converter.ProductUnit
 import com.example.tiendita.data.local.entity.CategoryEntity
+import com.example.tiendita.data.local.entity.ClientEntity
 import com.example.tiendita.data.local.entity.EmployeeEntity
 import com.example.tiendita.data.local.entity.InventoryMovementEntity
 import com.example.tiendita.data.local.entity.MovementLineEntity
 import com.example.tiendita.data.local.entity.ProductEntity
 import com.example.tiendita.data.local.entity.StockEntity
 import com.example.tiendita.data.local.entity.SupplierEntity
-import com.example.tiendita.data.local.entity.SupplierProductEntity
 import com.example.tiendita.data.local.entity.UserAccountEntity
 import com.example.tiendita.data.local.entity.WarehouseEntity
 import com.example.tiendita.database.AppDatabase
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -97,8 +96,8 @@ class AppDatabaseTest {
     fun duplicateSkuIsRejected() {
         runBlocking {
             val catId = db.productDao().insertCategory(CategoryEntity(name = "Drinks", description = null, createdAt = 1, updatedAt = 1))
-            val p1 = ProductEntity(sku = "SKU1", barcode = null, name = "Coke", description = null, categoryId = catId, unit = ProductUnit.PIECE, purchasePrice = 100, salePrice = 200, createdAt = 1, updatedAt = 1)
-            val p2 = ProductEntity(sku = "SKU1", barcode = null, name = "Pepsi", description = null, categoryId = catId, unit = ProductUnit.PIECE, purchasePrice = 100, salePrice = 200, createdAt = 1, updatedAt = 1)
+            val p1 = ProductEntity(sku = "SKU1", barcode = null, name = "Coke", description = null, categoryId = catId, unit = ProductUnit.PIECE, purchasePriceCents = 100, salePriceCents = 200, createdAt = 1, updatedAt = 1)
+            val p2 = ProductEntity(sku = "SKU1", barcode = null, name = "Pepsi", description = null, categoryId = catId, unit = ProductUnit.PIECE, purchasePriceCents = 100, salePriceCents = 200, createdAt = 1, updatedAt = 1)
 
             db.productDao().insertProduct(p1)
             db.productDao().insertProduct(p2) // Should throw
@@ -110,13 +109,13 @@ class AppDatabaseTest {
         runBlocking {
             val accountId = db.accountDao().insertAccount(UserAccountEntity(username = "admin", passwordHash = "a", salt = "b", passwordAlgorithm = "c", passwordIterations = 1, displayName = "d", email = null, phone = null, role = AccountRole.ADMIN, employeeId = null, createdAt = 1, updatedAt = 1))
             val catId = db.productDao().insertCategory(CategoryEntity(name = "Drinks", description = null, createdAt = 1, updatedAt = 1))
-            val p1 = db.productDao().insertProduct(ProductEntity(sku = "SKU1", barcode = null, name = "Coke", description = null, categoryId = catId, unit = ProductUnit.PIECE, purchasePrice = 100, salePrice = 200, createdAt = 1, updatedAt = 1))
+            val p1 = db.productDao().insertProduct(ProductEntity(sku = "SKU1", barcode = null, name = "Coke", description = null, categoryId = catId, unit = ProductUnit.PIECE, purchasePriceCents = 100, salePriceCents = 200, createdAt = 1, updatedAt = 1))
 
-            val whId = db.warehouseDao().insertWarehouse(WarehouseEntity(name = "Main", address = null, createdAt = 1, updatedAt = 1))
-            val movementId = db.inventoryDao().insertMovement(InventoryMovementEntity(type = MovementType.ADJ_IN, originWhId = null, destWhId = whId, supplierId = null, clientId = null, accountId = accountId, reference = null, notes = null, effectiveDate = 1, createdAt = 1))
+            val whId = db.warehouseDao().insertWarehouse(WarehouseEntity(name = "Main", address = null, description = null, createdAt = 1, updatedAt = 1))
+            val movementId = db.inventoryDao().insertMovement(InventoryMovementEntity(type = MovementType.ADJ_IN, originWarehouseId = null, destinationWarehouseId = whId, supplierId = null, clientId = null, accountId = accountId, reference = null, notes = null, effectiveDate = 1, createdAt = 1))
 
-            db.inventoryDao().insertMovementLine(MovementLineEntity(movementId = movementId, productId = p1, quantity = 5, unitCost = null))
-            db.inventoryDao().insertMovementLine(MovementLineEntity(movementId = movementId, productId = p1, quantity = 10, unitCost = null)) // Should throw due to Unique(movement_id, product_id)
+            db.inventoryDao().insertMovementLine(MovementLineEntity(movementId = movementId, productId = p1, quantity = 5, unitCostCents = null))
+            db.inventoryDao().insertMovementLine(MovementLineEntity(movementId = movementId, productId = p1, quantity = 10, unitCostCents = null)) // Should throw due to Unique(movement_id, product_id)
         }
     }
 
@@ -134,18 +133,32 @@ class AppDatabaseTest {
         }
     }
 
-    @Test(expected = SQLiteConstraintException::class)
-    fun productDeleteRestrictedWhenStockExists() {
+    @Test
+    fun executeMovementUpdatesStockAtomically() {
         runBlocking {
-            val catId = db.productDao().insertCategory(CategoryEntity(name = "Drinks", description = null, createdAt = 1, updatedAt = 1))
-            val p1Id = db.productDao().insertProduct(ProductEntity(sku = "SKU1", barcode = null, name = "Coke", description = null, categoryId = catId, unit = ProductUnit.PIECE, purchasePrice = 100, salePrice = 200, createdAt = 1, updatedAt = 1))
-            val whId = db.warehouseDao().insertWarehouse(WarehouseEntity(name = "Main", address = null, createdAt = 1, updatedAt = 1))
+            val accountId = db.accountDao().insertAccount(UserAccountEntity(username = "admin", passwordHash = "a", salt = "b", passwordAlgorithm = "c", passwordIterations = 1, displayName = "d", email = null, phone = null, role = AccountRole.ADMIN, employeeId = null, createdAt = 1, updatedAt = 1))
+            val supplierId = db.supplierDao().insertSupplier(SupplierEntity(companyName = "Supp", contactName = null, phone = null, email = null, address = null, notes = null))
+            val catId = db.productDao().insertCategory(CategoryEntity(name = "Drinks", description = null))
+            val pId = db.productDao().insertProduct(ProductEntity(sku = "SKU10", barcode = null, name = "Water", description = null, categoryId = catId, purchasePriceCents = 10, salePriceCents = 20))
+            val whId = db.warehouseDao().insertWarehouse(WarehouseEntity(name = "Warehouse1", address = null, description = null))
 
-            // Insert directly using raw SQL since DAO doesn't have it yet
-            db.openHelper.writableDatabase.execSQL("INSERT INTO stock (product_id, warehouse_id, quantity, min_quantity, updated_at) VALUES ($p1Id, $whId, 10, 0, 1)")
+            val movement = InventoryMovementEntity(
+                type = MovementType.IN,
+                originWarehouseId = null,
+                destinationWarehouseId = whId,
+                supplierId = supplierId,
+                clientId = null,
+                accountId = accountId,
+                reference = "REF1",
+                notes = null,
+                effectiveDate = System.currentTimeMillis()
+            )
+            val line = MovementLineEntity(movementId = 0, productId = pId, quantity = 50, unitCostCents = 10)
 
-            // Try to delete product
-            db.openHelper.writableDatabase.execSQL("DELETE FROM products WHERE id = $p1Id") // Should throw RESTRICT violation
+            db.inventoryDao().executeMovement(movement, listOf(line))
+
+            val stock = db.inventoryDao().getStockQuantity(pId, whId)
+            assertEquals(50L, stock)
         }
     }
 }

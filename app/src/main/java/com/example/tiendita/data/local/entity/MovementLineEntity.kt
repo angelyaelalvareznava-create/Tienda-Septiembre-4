@@ -41,6 +41,6 @@ data class MovementLineEntity(
     
     val quantity: Long,
     
-    @ColumnInfo(name = "unit_cost")
-    val unitCost: Long?
+    @ColumnInfo(name = "unit_cost_cents")
+    val unitCostCents: Long?
 )

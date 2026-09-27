@@ -27,6 +27,9 @@ data class UserAccountEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     
+    @ColumnInfo(name = "employee_id")
+    val employeeId: Long?,
+    
     val username: String,
     
     @ColumnInfo(name = "password_hash")
@@ -40,24 +43,21 @@ data class UserAccountEntity(
     @ColumnInfo(name = "password_iterations")
     val passwordIterations: Int,
     
+    val role: AccountRole,
+    
     @ColumnInfo(name = "display_name")
-    val displayName: String,
+    val displayName: String?,
     
     val email: String?,
     
     val phone: String?,
     
-    val role: AccountRole,
-    
-    @ColumnInfo(name = "is_active", defaultValue = "1")
-    val isActive: Boolean = true,
-    
-    @ColumnInfo(name = "employee_id")
-    val employeeId: Long?,
+    @ColumnInfo(defaultValue = "1")
+    val active: Boolean = true,
     
     @ColumnInfo(name = "created_at")
-    val createdAt: Long,
+    val createdAt: Long = System.currentTimeMillis(),
     
     @ColumnInfo(name = "updated_at")
-    val updatedAt: Long
+    val updatedAt: Long = System.currentTimeMillis()
 )

@@ -2,6 +2,9 @@ package com.example.tiendita.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tiendita.data.local.entity.ClientEntity
+import com.example.tiendita.data.local.entity.EmployeeEntity
+import com.example.tiendita.data.local.entity.SupplierEntity
 import com.example.tiendita.model.User
 import com.example.tiendita.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,6 +58,9 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             is UserFormEvent.OnEmailChanged -> {
                 val error = validateEmail(event.email)
                 _state.update { it.copy(email = event.email, errorEmail = error) }
+            }
+            is UserFormEvent.OnUserTypeChanged -> {
+                _state.update { it.copy(userType = event.userType) }
             }
             UserFormEvent.OnSubmit -> {
                 submitData()
@@ -138,6 +144,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
         
         viewModelScope.launch {
             try {
+                // 1. Insert into users table
                 repository.insertUser(
                     User(
                         nombre = currentState.nombre.trim(),
@@ -147,6 +154,51 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                         email = currentState.email.trim()
                     )
                 )
+
+                // 2. Insert into the selected database table (Employees, Clients, or Suppliers)
+                when (currentState.userType) {
+                    "Empleado" -> {
+                        repository.insertEmployee(
+                            EmployeeEntity(
+                                firstName = currentState.nombre.trim(),
+                                lastName = currentState.apellidos.trim(),
+                                position = "General",
+                                email = currentState.email.trim(),
+                                phone = currentState.telefono.trim(),
+                                address = currentState.direccion.trim(),
+                                hireDate = System.currentTimeMillis(),
+                                active = true
+                            )
+                        )
+                    }
+                    "Cliente" -> {
+                        repository.insertClient(
+                            ClientEntity(
+                                name = "${currentState.nombre.trim()} ${currentState.apellidos.trim()}",
+                                contactName = "${currentState.nombre.trim()} ${currentState.apellidos.trim()}",
+                                phone = currentState.telefono.trim(),
+                                email = currentState.email.trim(),
+                                address = currentState.direccion.trim(),
+                                notes = "Registrado desde app",
+                                active = true
+                            )
+                        )
+                    }
+                    "Proveedor" -> {
+                        repository.insertSupplier(
+                            SupplierEntity(
+                                companyName = "${currentState.nombre.trim()} ${currentState.apellidos.trim()}",
+                                contactName = "${currentState.nombre.trim()} ${currentState.apellidos.trim()}",
+                                phone = currentState.telefono.trim(),
+                                email = currentState.email.trim(),
+                                address = currentState.direccion.trim(),
+                                notes = "Registrado desde app",
+                                active = true
+                            )
+                        )
+                    }
+                }
+
                 _state.update { 
                     UserFormState(registroExitoso = true)
                 }

@@ -22,7 +22,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -33,8 +39,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -54,7 +62,7 @@ import com.example.tiendita.viewmodel.UserFormEvent
 import com.example.tiendita.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun UserFormScreen(
     viewModel: UserViewModel,
@@ -136,6 +144,11 @@ fun UserFormScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
+                        UserRoleDropdown(
+                            selectedRole = state.userType,
+                            onRoleSelected = { viewModel.onEvent(UserFormEvent.OnUserTypeChanged(it)) }
+                        )
+
                         NexoTextField(
                             value = state.nombre,
                             onValueChange = { viewModel.onEvent(UserFormEvent.OnNombreChanged(it)) },
@@ -155,7 +168,7 @@ fun UserFormScreen(
                             modifier = Modifier.onFocusChanged {
                                 if (it.isFocused) {
                                     coroutineScope.launch {
-                                        scrollState.animateScrollTo(with(density) { 100.dp.toPx().toInt() })
+                                        scrollState.animateScrollTo(with(density) { 150.dp.toPx().toInt() })
                                     }
                                 }
                             }
@@ -171,7 +184,7 @@ fun UserFormScreen(
                             modifier = Modifier.onFocusChanged {
                                 if (it.isFocused) {
                                     coroutineScope.launch {
-                                        scrollState.animateScrollTo(with(density) { 200.dp.toPx().toInt() })
+                                        scrollState.animateScrollTo(with(density) { 250.dp.toPx().toInt() })
                                     }
                                 }
                             }
@@ -190,7 +203,7 @@ fun UserFormScreen(
                             modifier = Modifier.onFocusChanged {
                                 if (it.isFocused) {
                                     coroutineScope.launch {
-                                        scrollState.animateScrollTo(with(density) { 300.dp.toPx().toInt() })
+                                        scrollState.animateScrollTo(with(density) { 350.dp.toPx().toInt() })
                                     }
                                 }
                             }
@@ -209,7 +222,7 @@ fun UserFormScreen(
                             modifier = Modifier.onFocusChanged {
                                 if (it.isFocused) {
                                     coroutineScope.launch {
-                                        scrollState.animateScrollTo(with(density) { 400.dp.toPx().toInt() })
+                                        scrollState.animateScrollTo(with(density) { 450.dp.toPx().toInt() })
                                     }
                                 }
                             }
@@ -275,6 +288,49 @@ fun UserFormScreen(
                 containerColor = if (state.registroExitoso) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer,
                 contentColor = if (state.registroExitoso) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UserRoleDropdown(
+    selectedRole: String,
+    onRoleSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val roles = listOf("Empleado", "Cliente", "Proveedor")
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value = selectedRole,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Tipo de Rol / Registro") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true),
+            shape = RoundedCornerShape(16.dp)
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            roles.forEach { role ->
+                DropdownMenuItem(
+                    text = { Text(role) },
+                    onClick = {
+                        onRoleSelected(role)
+                        expanded = false
+                    }
+                )
+            }
         }
     }
 }

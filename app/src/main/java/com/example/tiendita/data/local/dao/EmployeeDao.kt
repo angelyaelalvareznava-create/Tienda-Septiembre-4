@@ -18,6 +18,6 @@ interface EmployeeDao {
     @Query("SELECT * FROM employees WHERE id = :id")
     suspend fun getEmployeeById(id: Long): EmployeeEntity?
 
-    @Query("SELECT * FROM employees WHERE is_active = 1")
+    @Query("SELECT * FROM employees WHERE active = 1")
     fun getActiveEmployeesFlow(): Flow<List<EmployeeEntity>>
 }

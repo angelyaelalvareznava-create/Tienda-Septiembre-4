@@ -12,4 +12,5 @@ object NexoDestination {
     const val EditProfile = "edit_profile"
     const val Inventory = "inventory"
     const val Movements = "movements"
+    const val DatabaseInspection = "database_inspection"
 }

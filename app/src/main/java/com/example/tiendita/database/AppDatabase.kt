@@ -13,7 +13,6 @@ import com.example.tiendita.data.local.dao.CalendarDao
 import com.example.tiendita.data.local.dao.ClientDao
 import com.example.tiendita.data.local.dao.EmployeeDao
 import com.example.tiendita.data.local.dao.InventoryDao
-import com.example.tiendita.data.local.dao.InventoryItemDao
 import com.example.tiendita.data.local.dao.ProductDao
 import com.example.tiendita.data.local.dao.SupplierDao
 import com.example.tiendita.data.local.dao.WarehouseDao
@@ -21,7 +20,6 @@ import com.example.tiendita.data.local.entity.CalendarEventEntity
 import com.example.tiendita.data.local.entity.CategoryEntity
 import com.example.tiendita.data.local.entity.ClientEntity
 import com.example.tiendita.data.local.entity.EmployeeEntity
-import com.example.tiendita.data.local.entity.InventoryItemEntity
 import com.example.tiendita.data.local.entity.InventoryMovementEntity
 import com.example.tiendita.data.local.entity.MovementLineEntity
 import com.example.tiendita.data.local.entity.ProductEntity
@@ -43,7 +41,6 @@ import kotlinx.coroutines.launch
         EmployeeEntity::class,
         ClientEntity::class,
         SupplierEntity::class,
-        InventoryItemEntity::class,
         CategoryEntity::class,
         ProductEntity::class,
         SupplierProductEntity::class,
@@ -53,7 +50,7 @@ import kotlinx.coroutines.launch
         MovementLineEntity::class,
         CalendarEventEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 @TypeConverters(EnumConverters::class)
@@ -64,7 +61,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun employeeDao(): EmployeeDao
     abstract fun clientDao(): ClientDao
     abstract fun supplierDao(): SupplierDao
-    abstract fun inventoryItemDao(): InventoryItemDao
     abstract fun productDao(): ProductDao
     abstract fun warehouseDao(): WarehouseDao
     abstract fun inventoryDao(): InventoryDao
@@ -81,7 +77,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "gameshelf_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(true)
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
@@ -103,57 +99,43 @@ abstract class AppDatabase : RoomDatabase() {
                 // 1. Clientes (3 examples)
                 val clientDao = database.clientDao()
                 if (clientDao.getActiveClientsFlow().first().isEmpty()) {
-                    clientDao.insertClient(
-                        ClientEntity(firstName = "Juan", lastName = "Pérez", phone = "3312345678", address = "Av. Juárez 100, GDL", email = "juan.perez@example.com")
-                    )
-                    clientDao.insertClient(
-                        ClientEntity(firstName = "María", lastName = "Gómez", phone = "3387654321", address = "Calle Hidalgo 250, Zapopan", email = "maria.gomez@example.com")
-                    )
-                    clientDao.insertClient(
-                        ClientEntity(firstName = "Carlos", lastName = "Ruiz", phone = "3355443322", address = "Blvd. Rosales 45, Tlaquepaque", email = "carlos.ruiz@example.com")
-                    )
+                    clientDao.insertClient(ClientEntity(name = "Abarrotes La Esquina", contactName = "Juan Pérez", phone = "3312345678", email = "juan@esquina.com", address = "Av. Juárez 100, GDL", notes = "Cliente frecuente"))
+                    clientDao.insertClient(ClientEntity(name = "Café del Parque", contactName = "María Gómez", phone = "3387654321", email = "maria@cafe.com", address = "Calle Hidalgo 250, Zapopan", notes = "Servicio de cafetería"))
+                    clientDao.insertClient(ClientEntity(name = "Mini Súper Zapopan", contactName = "Carlos Ruiz", phone = "3355443322", email = "carlos@super.com", address = "Blvd. Rosales 45, Tlaquepaque", notes = "Compra de mayoreo"))
                 }
 
                 // 2. Empleados (3 examples)
                 val employeeDao = database.employeeDao()
                 if (employeeDao.getActiveEmployeesFlow().first().isEmpty()) {
-                    employeeDao.insertEmployee(
-                        EmployeeEntity(firstName = "Ana", lastName = "Torres", position = "Encargada", phone = "3311223344", address = "Av. Vallarta 1200, GDL", email = "ana.torres@nexostock.com", hireDate = System.currentTimeMillis())
-                    )
-                    employeeDao.insertEmployee(
-                        EmployeeEntity(firstName = "Luis", lastName = "Mendoza", position = "Auxiliar", phone = "3399887766", address = "Paseo de los Virreyes 88, Zapopan", email = "luis.mendoza@nexostock.com", hireDate = System.currentTimeMillis())
-                    )
-                    employeeDao.insertEmployee(
-                        EmployeeEntity(firstName = "Karla", lastName = "Ramírez", position = "Administración", phone = "3344556677", address = "Periférico Sur 500, Tlaquepaque", email = "karla.ramirez@nexostock.com", hireDate = System.currentTimeMillis())
-                    )
+                    employeeDao.insertEmployee(EmployeeEntity(firstName = "Ana", lastName = "Torres", position = "Encargado", email = "ana.torres@nexostock.com", phone = "3311223344", address = "Av. Vallarta 1200, GDL", hireDate = System.currentTimeMillis(), active = true))
+                    employeeDao.insertEmployee(EmployeeEntity(firstName = "Luis", lastName = "Mendoza", position = "Auxiliar", email = "luis.mendoza@nexostock.com", phone = "3399887766", address = "Paseo de los Virreyes 88, Zapopan", hireDate = System.currentTimeMillis(), active = true))
+                    employeeDao.insertEmployee(EmployeeEntity(firstName = "Karla", lastName = "Ramírez", position = "Administración", email = "karla.ramirez@nexostock.com", phone = "3344556677", address = "Periférico Sur 500, Tlaquepaque", hireDate = System.currentTimeMillis(), active = true))
                 }
 
                 // 3. Proveedores (3 examples)
                 val supplierDao = database.supplierDao()
                 if (supplierDao.getActiveSuppliersFlow().first().isEmpty()) {
-                    supplierDao.insertSupplier(
-                        SupplierEntity(firstName = "Pedro", lastName = "Sánchez", phone = "3322334455", address = "Zona Industrial 300, GDL", email = "pedro.sanchez@proveedores.com")
-                    )
-                    supplierDao.insertSupplier(
-                        SupplierEntity(firstName = "Sofia", lastName = "Morales", phone = "3377665544", address = "Av. Patria 1500, Zapopan", email = "sofia.morales@distribuidora.com")
-                    )
-                    supplierDao.insertSupplier(
-                        SupplierEntity(firstName = "Javier", lastName = "Ortiz", phone = "3366554433", address = "Carretera a Chapala km 12, Toluquilla", email = "javier.ortiz@mayoreo.com")
-                    )
+                    supplierDao.insertSupplier(SupplierEntity(companyName = "Distribuidora Occidente", contactName = "Pedro Sánchez", phone = "3322334455", email = "pedro@occidente.com", address = "Zona Industrial 300, GDL", notes = "Abarrotes y generales"))
+                    supplierDao.insertSupplier(SupplierEntity(companyName = "Empaques del Centro", contactName = "Sofia Morales", phone = "3377665544", email = "sofia@empaques.com", address = "Av. Patria 1500, Zapopan", notes = "Material de embalaje"))
+                    supplierDao.insertSupplier(SupplierEntity(companyName = "Limpieza Industrial GDL", contactName = "Javier Ortiz", phone = "3366554433", email = "javier@limpieza.com", address = "Carretera a Chapala km 12, Toluquilla", notes = "Productos de limpieza"))
                 }
 
-                // 4. Inventario (3 examples)
-                val inventoryItemDao = database.inventoryItemDao()
-                if (inventoryItemDao.getAllItems().isEmpty()) {
-                    inventoryItemDao.insertItem(
-                        InventoryItemEntity(name = "Arroz Grano Superior (1kg)", description = "Saco de arroz seleccionado", quantity = 150, price = 28.50)
-                    )
-                    inventoryItemDao.insertItem(
-                        InventoryItemEntity(name = "Aceite Vegetal 1L", description = "Botella de aceite comestible", quantity = 80, price = 42.00)
-                    )
-                    inventoryItemDao.insertItem(
-                        InventoryItemEntity(name = "Azúcar Morena 1kg", description = "Azúcar de caña natural", quantity = 120, price = 31.00)
-                    )
+                // 4. Inventario / Productos (3 examples)
+                val productDao = database.productDao()
+                val catId = productDao.insertCategory(CategoryEntity(name = "Abarrotes", description = "Productos de despensa general"))
+                val whDao = database.warehouseDao()
+                val whId = whDao.insertWarehouse(WarehouseEntity(name = "Almacén Central", address = "Av. Principal 1000", description = "Bodega principal"))
+
+                if (productDao.getActiveProductsFlow().first().isEmpty()) {
+                    val p1 = productDao.insertProduct(ProductEntity(sku = "SKU-ARR-001", barcode = "75010001", name = "Arroz Grano Superior (1kg)", description = "Saco de arroz seleccionado", categoryId = catId, purchasePriceCents = 2000, salePriceCents = 2850))
+                    val p2 = productDao.insertProduct(ProductEntity(sku = "SKU-ACE-002", barcode = "75010002", name = "Aceite Vegetal 1L", description = "Botella de aceite comestible", categoryId = catId, purchasePriceCents = 3000, salePriceCents = 4200))
+                    val p3 = productDao.insertProduct(ProductEntity(sku = "SKU-AZU-003", barcode = "75010003", name = "Azúcar Morena 1kg", description = "Azúcar de caña natural", categoryId = catId, purchasePriceCents = 2200, salePriceCents = 3100))
+
+                    // Initial stock
+                    val invDao = database.inventoryDao()
+                    invDao.insertOrReplaceStock(StockEntity(productId = p1, warehouseId = whId, quantity = 15000, minimumQuantity = 1000))
+                    invDao.insertOrReplaceStock(StockEntity(productId = p2, warehouseId = whId, quantity = 8000, minimumQuantity = 500))
+                    invDao.insertOrReplaceStock(StockEntity(productId = p3, warehouseId = whId, quantity = 12000, minimumQuantity = 800))
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

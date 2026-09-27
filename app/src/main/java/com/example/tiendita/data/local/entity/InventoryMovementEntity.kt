@@ -13,14 +13,14 @@ import com.example.tiendita.data.local.converter.MovementType
         ForeignKey(
             entity = WarehouseEntity::class,
             parentColumns = ["id"],
-            childColumns = ["origin_wh_id"],
+            childColumns = ["origin_warehouse_id"],
             onDelete = ForeignKey.RESTRICT,
             onUpdate = ForeignKey.NO_ACTION
         ),
         ForeignKey(
             entity = WarehouseEntity::class,
             parentColumns = ["id"],
-            childColumns = ["dest_wh_id"],
+            childColumns = ["destination_warehouse_id"],
             onDelete = ForeignKey.RESTRICT,
             onUpdate = ForeignKey.NO_ACTION
         ),
@@ -47,8 +47,8 @@ import com.example.tiendita.data.local.converter.MovementType
         )
     ],
     indices = [
-        Index(value = ["origin_wh_id"]),
-        Index(value = ["dest_wh_id"]),
+        Index(value = ["origin_warehouse_id"]),
+        Index(value = ["destination_warehouse_id"]),
         Index(value = ["supplier_id"]),
         Index(value = ["client_id"]),
         Index(value = ["account_id"]),
@@ -61,11 +61,11 @@ data class InventoryMovementEntity(
     
     val type: MovementType,
     
-    @ColumnInfo(name = "origin_wh_id")
-    val originWhId: Long?,
+    @ColumnInfo(name = "origin_warehouse_id")
+    val originWarehouseId: Long?,
     
-    @ColumnInfo(name = "dest_wh_id")
-    val destWhId: Long?,
+    @ColumnInfo(name = "destination_warehouse_id")
+    val destinationWarehouseId: Long?,
     
     @ColumnInfo(name = "supplier_id")
     val supplierId: Long?,
@@ -84,5 +84,5 @@ data class InventoryMovementEntity(
     val effectiveDate: Long,
     
     @ColumnInfo(name = "created_at")
-    val createdAt: Long
+    val createdAt: Long = System.currentTimeMillis()
 )

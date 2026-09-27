@@ -15,7 +15,7 @@ interface WarehouseDao {
     @Update
     suspend fun updateWarehouse(warehouse: WarehouseEntity)
 
-    @Query("SELECT * FROM warehouses WHERE is_active = 1")
+    @Query("SELECT * FROM warehouses WHERE active = 1")
     fun getActiveWarehousesFlow(): Flow<List<WarehouseEntity>>
 
     @Query("SELECT COUNT(*) FROM warehouses")

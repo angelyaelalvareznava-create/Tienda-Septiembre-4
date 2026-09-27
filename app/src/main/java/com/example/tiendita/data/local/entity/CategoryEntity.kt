@@ -19,12 +19,12 @@ data class CategoryEntity(
     
     val description: String?,
     
-    @ColumnInfo(name = "is_active", defaultValue = "1")
-    val isActive: Boolean = true,
+    @ColumnInfo(defaultValue = "1")
+    val active: Boolean = true,
     
     @ColumnInfo(name = "created_at")
-    val createdAt: Long,
+    val createdAt: Long = System.currentTimeMillis(),
     
     @ColumnInfo(name = "updated_at")
-    val updatedAt: Long
+    val updatedAt: Long = System.currentTimeMillis()
 )

@@ -37,9 +37,9 @@ data class StockEntity(
     
     val quantity: Long,
     
-    @ColumnInfo(name = "min_quantity", defaultValue = "0")
-    val minQuantity: Long = 0,
+    @ColumnInfo(name = "minimum_quantity", defaultValue = "0")
+    val minimumQuantity: Long = 0,
     
     @ColumnInfo(name = "updated_at")
-    val updatedAt: Long
+    val updatedAt: Long = System.currentTimeMillis()
 )

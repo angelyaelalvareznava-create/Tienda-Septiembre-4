@@ -19,15 +19,15 @@ data class EmployeeEntity(
     
     val email: String?,
     
-    val phone: String,
+    val phone: String?,
     
     val address: String?,
     
     @ColumnInfo(name = "hire_date")
     val hireDate: Long?,
     
-    @ColumnInfo(name = "is_active", defaultValue = "1")
-    val isActive: Boolean = true,
+    @ColumnInfo(defaultValue = "1")
+    val active: Boolean = true,
     
     @ColumnInfo(name = "created_at")
     val createdAt: Long = System.currentTimeMillis(),

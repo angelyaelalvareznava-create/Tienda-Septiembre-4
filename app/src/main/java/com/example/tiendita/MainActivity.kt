@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tiendita.database.AppDatabase
+import com.example.tiendita.repository.UserRepositoryImpl
 import com.example.tiendita.ui.navigation.NexoNavGraph
 import com.example.tiendita.ui.theme.NexoStockTheme
 import com.example.tiendita.viewmodel.UserViewModel
@@ -23,7 +24,7 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val context = LocalContext.current
                     val database = remember { AppDatabase.getDatabase(context.applicationContext) }
-                    val repository = remember { com.example.tiendita.repository.UserRepositoryImpl(database.userDao()) }
+                    val repository = remember { UserRepositoryImpl(database) }
                     
                     val viewModel: UserViewModel = viewModel(
                         factory = UserViewModelFactory(repository)

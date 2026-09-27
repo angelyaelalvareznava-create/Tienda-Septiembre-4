@@ -58,6 +58,8 @@
     <string name="menu_edit_profile">Editar perfil</string>
     <string name="menu_inventory">Inventario (Próximamente)</string>
     <string name="menu_movements">Movimientos (Próximamente)</string>
+    <string name="menu_database">Inspección de Base de Datos</string>
+    <string name="title_database_inspection">Base de Datos (Room)</string>
     <string name="menu_logout">Cerrar sesión</string>
 
     <!-- Directories -->

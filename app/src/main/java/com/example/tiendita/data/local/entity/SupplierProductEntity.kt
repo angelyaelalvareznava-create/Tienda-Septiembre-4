@@ -38,12 +38,15 @@ data class SupplierProductEntity(
     @ColumnInfo(name = "supplier_sku")
     val supplierSku: String?,
     
-    @ColumnInfo(name = "last_cost")
-    val lastCost: Long?,
+    @ColumnInfo(name = "unit_cost_cents")
+    val unitCostCents: Long?,
     
-    @ColumnInfo(name = "is_active", defaultValue = "1")
-    val isActive: Boolean = true,
+    @ColumnInfo(name = "lead_time_days")
+    val leadTimeDays: Int?,
+    
+    @ColumnInfo(defaultValue = "0")
+    val preferred: Boolean = false,
     
     @ColumnInfo(name = "updated_at")
-    val updatedAt: Long
+    val updatedAt: Long = System.currentTimeMillis()
 )

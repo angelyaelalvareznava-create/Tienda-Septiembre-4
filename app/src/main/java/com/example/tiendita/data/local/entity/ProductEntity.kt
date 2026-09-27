@@ -40,20 +40,20 @@ data class ProductEntity(
     val categoryId: Long,
     
     @ColumnInfo(defaultValue = "PIECE")
-    val unit: ProductUnit,
+    val unit: ProductUnit = ProductUnit.PIECE,
     
-    @ColumnInfo(name = "purchase_price")
-    val purchasePrice: Long,
+    @ColumnInfo(name = "purchase_price_cents")
+    val purchasePriceCents: Long,
     
-    @ColumnInfo(name = "sale_price")
-    val salePrice: Long?,
+    @ColumnInfo(name = "sale_price_cents")
+    val salePriceCents: Long?,
     
-    @ColumnInfo(name = "is_active", defaultValue = "1")
-    val isActive: Boolean = true,
+    @ColumnInfo(defaultValue = "1")
+    val active: Boolean = true,
     
     @ColumnInfo(name = "created_at")
-    val createdAt: Long,
+    val createdAt: Long = System.currentTimeMillis(),
     
     @ColumnInfo(name = "updated_at")
-    val updatedAt: Long
+    val updatedAt: Long = System.currentTimeMillis()
 )

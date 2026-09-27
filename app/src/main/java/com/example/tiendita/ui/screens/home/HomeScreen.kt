@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -27,6 +26,7 @@ fun HomeScreen(
     onNavigateToEditProfile: () -> Unit,
     onNavigateToInventory: () -> Unit,
     onNavigateToMovements: () -> Unit,
+    onNavigateToDatabase: () -> Unit,
     onLogout: () -> Unit
 ) {
     ScreenBackground {
@@ -38,6 +38,9 @@ fun HomeScreen(
                 contentPadding = PaddingValues(24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                item {
+                    AdminButton(text = stringResource(R.string.menu_database), onClick = onNavigateToDatabase)
+                }
                 item {
                     AdminButton(text = stringResource(R.string.menu_calendar), onClick = onNavigateToCalendar)
                 }
@@ -83,6 +86,7 @@ private fun HomeScreenPreview() {
             onNavigateToEditProfile = {},
             onNavigateToInventory = {},
             onNavigateToMovements = {},
+            onNavigateToDatabase = {},
             onLogout = {}
         )
     }
