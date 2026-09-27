@@ -51,13 +51,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.tiendita.R
 import com.example.tiendita.ui.components.AdminButton
 import com.example.tiendita.ui.components.AdminCard
 import com.example.tiendita.ui.components.AvatarIcon
+import com.example.tiendita.ui.components.NexoPasswordTextField
 import com.example.tiendita.ui.components.NexoTextField
 import com.example.tiendita.ui.components.NexoTopBar
 import com.example.tiendita.ui.components.ScreenBackground
@@ -307,7 +307,7 @@ fun UserFormScreen(
                                 }
                             )
 
-                            NexoTextField(
+                            NexoPasswordTextField(
                                 value = state.password,
                                 onValueChange = { viewModel.onEvent(UserFormEvent.OnPasswordChanged(it)) },
                                 label = stringResource(R.string.label_password),
@@ -317,7 +317,6 @@ fun UserFormScreen(
                                     keyboardType = KeyboardType.Password,
                                     imeAction = ImeAction.Next
                                 ),
-                                visualTransformation = PasswordVisualTransformation(),
                                 modifier = Modifier.onFocusChanged {
                                     if (it.isFocused) {
                                         coroutineScope.launch {
@@ -327,7 +326,7 @@ fun UserFormScreen(
                                 }
                             )
 
-                            NexoTextField(
+                            NexoPasswordTextField(
                                 value = state.confirmPassword,
                                 onValueChange = { viewModel.onEvent(UserFormEvent.OnConfirmPasswordChanged(it)) },
                                 label = stringResource(R.string.label_confirm_password),
@@ -337,7 +336,6 @@ fun UserFormScreen(
                                     keyboardType = KeyboardType.Password,
                                     imeAction = ImeAction.Done
                                 ),
-                                visualTransformation = PasswordVisualTransformation(),
                                 modifier = Modifier.onFocusChanged {
                                     if (it.isFocused) {
                                         coroutineScope.launch {

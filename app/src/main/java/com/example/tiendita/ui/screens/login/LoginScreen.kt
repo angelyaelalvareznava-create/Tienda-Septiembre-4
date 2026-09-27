@@ -33,7 +33,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,6 +40,7 @@ import com.example.tiendita.R
 import com.example.tiendita.database.AppDatabase
 import com.example.tiendita.ui.components.AdminButton
 import com.example.tiendita.ui.components.AdminCard
+import com.example.tiendita.ui.components.NexoPasswordTextField
 import com.example.tiendita.ui.components.NexoTextField
 import com.example.tiendita.ui.components.NexoTopBar
 import com.example.tiendita.ui.components.ScreenBackground
@@ -117,7 +117,7 @@ fun LoginScreen(
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                         )
 
-                        NexoTextField(
+                        NexoPasswordTextField(
                             value = password,
                             onValueChange = { password = it },
                             label = stringResource(R.string.label_password),
@@ -126,8 +126,7 @@ fun LoginScreen(
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Password,
                                 imeAction = ImeAction.Done
-                            ),
-                            visualTransformation = PasswordVisualTransformation()
+                            )
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))

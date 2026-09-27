@@ -116,4 +116,5 @@
     <string name="label_username">Nombre de usuario</string>
     <string name="placeholder_username">Ej. mi_usuario</string>
     <string name="error_username_taken">Este nombre de usuario ya está registrado</string>
+    <string name="msg_profile_updated">¡Perfil actualizado correctamente!</string>
 </resources>
