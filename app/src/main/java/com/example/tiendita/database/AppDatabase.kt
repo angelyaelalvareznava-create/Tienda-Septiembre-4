@@ -5,7 +5,6 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.tiendita.dao.UserDao
 import com.example.tiendita.data.local.converter.EnumConverters
 import com.example.tiendita.data.local.dao.AccountDao
@@ -74,25 +73,6 @@ abstract class AppDatabase : RoomDatabase() {
                     "gameshelf_database"
                 )
                     .fallbackToDestructiveMigration(true)
-                    .addCallback(object : RoomDatabase.Callback() {
-                        override fun onCreate(db: SupportSQLiteDatabase) {
-                            super.onCreate(db)
-                            try {
-                                db.execSQL("DELETE FROM users")
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
-                        }
-
-                        override fun onOpen(db: SupportSQLiteDatabase) {
-                            super.onOpen(db)
-                            try {
-                                db.execSQL("DELETE FROM users")
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
-                        }
-                    })
                     .build()
                 INSTANCE = instance
                 instance
