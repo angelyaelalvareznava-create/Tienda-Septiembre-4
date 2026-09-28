@@ -1,10 +1,12 @@
 package com.example.tiendita.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.tiendita.model.User
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserDao {
@@ -13,6 +15,9 @@ interface UserDao {
 
     @Query("SELECT * FROM users ORDER BY id DESC")
     suspend fun getAllUsers(): List<User>
+
+    @Query("SELECT * FROM users ORDER BY id DESC")
+    fun getAllUsersFlow(): Flow<List<User>>
 
     @Query("SELECT * FROM users WHERE id = :userId LIMIT 1")
     suspend fun getUserById(userId: Int): User?
@@ -25,4 +30,7 @@ interface UserDao {
 
     @Query("SELECT * FROM users WHERE username = :username AND password = :password LIMIT 1")
     suspend fun getUserByCredentials(username: String, password: String): User?
+
+    @Delete
+    suspend fun deleteUser(user: User)
 }

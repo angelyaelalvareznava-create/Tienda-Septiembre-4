@@ -153,6 +153,10 @@ fun UserFormScreen(
                                 onClick = { viewModel.onEvent(UserFormEvent.OnSelectUserType("Empleado")) }
                             )
                             AdminButton(
+                                text = "Registrar Admin",
+                                onClick = { viewModel.onEvent(UserFormEvent.OnSelectUserType("Admin")) }
+                            )
+                            AdminButton(
                                 text = "Registrar Cliente",
                                 onClick = { viewModel.onEvent(UserFormEvent.OnSelectUserType("Cliente")) }
                             )
@@ -250,7 +254,7 @@ fun UserFormScreen(
                                     selectedPosition = state.position,
                                     onPositionSelected = { viewModel.onEvent(UserFormEvent.OnPositionChanged(it)) }
                                 )
-                            } else {
+                            } else if (state.userType == "Cliente" || state.userType == "Proveedor") {
                                 // Address field for Client / Supplier
                                 NexoTextField(
                                     value = state.direccion,
@@ -268,6 +272,7 @@ fun UserFormScreen(
                                     }
                                 )
                             }
+                            // Admin has neither position dropdown nor address field
 
                             NexoTextField(
                                 value = state.telefono,

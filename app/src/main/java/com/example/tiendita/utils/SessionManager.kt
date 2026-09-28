@@ -13,7 +13,7 @@ object SessionManager {
 
     fun login(username: String) {
         isLoggedIn = true
-        loggedInUsername = username
+        loggedInUsername = username.ifBlank { "admin" }
     }
 
     fun logout() {

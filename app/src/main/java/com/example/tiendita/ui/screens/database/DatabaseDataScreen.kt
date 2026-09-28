@@ -3,10 +3,13 @@ package com.example.tiendita.ui.screens.database
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -17,6 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -27,6 +32,10 @@ import com.example.tiendita.database.AppDatabase
 import com.example.tiendita.ui.components.AdminCard
 import com.example.tiendita.ui.components.NexoTopBar
 import com.example.tiendita.ui.components.ScreenBackground
+import com.example.tiendita.utils.SessionManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun DatabaseDataScreen(onBack: () -> Unit) {
@@ -37,7 +46,13 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
     val employees by database.employeeDao().getActiveEmployeesFlow().collectAsState(initial = emptyList())
     val suppliers by database.supplierDao().getActiveSuppliersFlow().collectAsState(initial = emptyList())
     val products by database.productDao().getActiveProductsFlow().collectAsState(initial = emptyList())
+    val users by database.userDao().getAllUsersFlow().collectAsState(initial = emptyList())
+
     val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    val isAdmin = SessionManager.loggedInUsername.lowercase() == "admin" ||
+            users.find { it.username == SessionManager.loggedInUsername }?.userType == "Admin"
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -51,6 +66,56 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
                     contentPadding = PaddingValues(24.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    item {
+                        AdminCard {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "🔑 Usuarios Registrados (${users.size})" + if (isAdmin) " - [Admin: Privilegios de eliminación]" else "",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                if (users.isEmpty()) {
+                                    Text("No hay usuarios registrados.", style = MaterialTheme.typography.bodySmall)
+                                } else {
+                                    users.forEach { user ->
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text("• [${user.userType}] ${user.username} (${user.nombre} ${user.apellidos})", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                                                Text("   Email: ${user.email} | Tel: ${user.telefono}", style = MaterialTheme.typography.bodySmall)
+                                            }
+                                            if (isAdmin) {
+                                                Button(
+                                                    onClick = {
+                                                        coroutineScope.launch {
+                                                            withContext(Dispatchers.IO) {
+                                                                database.userDao().deleteUser(user)
+                                                            }
+                                                            snackbarHostState.showSnackbar("Usuario ${user.username} eliminado correctamente")
+                                                        }
+                                                    },
+                                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                                                ) {
+                                                    Text("Eliminar", style = MaterialTheme.typography.labelSmall)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     item {
                         AdminCard {
                             Column(

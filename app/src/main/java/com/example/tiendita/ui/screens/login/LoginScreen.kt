@@ -45,6 +45,7 @@ import com.example.tiendita.ui.components.NexoTextField
 import com.example.tiendita.ui.components.NexoTopBar
 import com.example.tiendita.ui.components.ScreenBackground
 import com.example.tiendita.ui.theme.NexoStockTheme
+import com.example.tiendita.utils.SessionManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -86,7 +87,10 @@ fun LoginScreen(
                 .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            NexoTopBar(title = stringResource(R.string.title_login))
+            NexoTopBar(
+                title = stringResource(R.string.title_login),
+                showUserStatus = false
+            )
 
             Column(
                 modifier = Modifier
@@ -157,7 +161,11 @@ fun LoginScreen(
                                                 database.userDao().getUserByCredentials(username.trim(), password.trim())
                                             }
                                             val isDefaultAdmin = (username.trim().lowercase() == "admin" && password == "Admin123!")
-                                            if (dbUser != null || isDefaultAdmin) {
+                                            if (dbUser != null) {
+                                                SessionManager.login(dbUser.username)
+                                                onLogin()
+                                            } else if (isDefaultAdmin) {
+                                                SessionManager.login("admin")
                                                 onLogin()
                                             } else {
                                                 username = ""
@@ -185,7 +193,10 @@ fun LoginScreen(
 
                         AdminButton(
                             text = "Acceso Rápido (Inicio)",
-                            onClick = onLogin
+                            onClick = {
+                                SessionManager.login(username.ifBlank { "admin" })
+                                onLogin()
+                            }
                         )
 
                         Text(

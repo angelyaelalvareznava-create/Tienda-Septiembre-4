@@ -14,8 +14,9 @@ data class User(
     val username: String,
     val nombre: String,
     val apellidos: String,
-    val direccion: String,
+    val direccion: String = "",
     val telefono: String,
     val email: String,
-    val password: String
+    val password: String,
+    val userType: String = "Empleado" // "Admin", "Empleado", "Cliente", "Proveedor"
 )

@@ -2,7 +2,7 @@ package com.example.tiendita.viewmodel
 
 data class UserFormState(
     val roleSelected: Boolean = false,
-    val userType: String = "", // "Empleado", "Cliente", "Proveedor"
+    val userType: String = "", // "Admin", "Empleado", "Cliente", "Proveedor"
     val username: String = "",
     val nombre: String = "",
     val apellidos: String = "",
@@ -29,7 +29,7 @@ data class UserFormState(
                 username.isNotBlank() &&
                 nombre.isNotBlank() &&
                 apellidos.isNotBlank() &&
-                (userType == "Empleado" || direccion.isNotBlank()) &&
+                (userType == "Empleado" || userType == "Admin" || direccion.isNotBlank()) &&
                 telefono.length == 10 &&
                 email.isNotBlank() &&
                 password.isNotBlank() &&

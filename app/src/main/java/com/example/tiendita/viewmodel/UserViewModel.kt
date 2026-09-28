@@ -32,6 +32,19 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             is UserFormEvent.OnUsernameChanged -> {
                 val formatError = validateUsernameFormat(event.username)
                 _state.update { it.copy(username = event.username, errorUsername = formatError) }
+                if (formatError == null && event.username.isNotBlank()) {
+                    viewModelScope.launch {
+                        try {
+                            val existing = repository.getUserByUsername(event.username.trim())
+                            val uniqueError = if (existing != null) "Este nombre de usuario ya está registrado. Por favor elige otro." else null
+                            if (_state.value.username == event.username) {
+                                _state.update { it.copy(errorUsername = uniqueError) }
+                            }
+                        } catch (e: Exception) {
+                            // ignore
+                        }
+                    }
+                }
             }
             is UserFormEvent.OnNombreChanged -> {
                 val error = when {
@@ -53,7 +66,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             }
             is UserFormEvent.OnDireccionChanged -> {
                 val error = when {
-                    _state.value.userType == "Empleado" -> null
+                    _state.value.userType == "Empleado" || _state.value.userType == "Admin" -> null
                     event.direccion.isBlank() -> "La dirección es obligatoria"
                     event.direccion.length <= 10 -> "La dirección debe tener más de 10 caracteres"
                     event.direccion.length >= 150 -> "La dirección debe tener menos de 150 caracteres"
@@ -159,7 +172,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             else -> null
         }
         val direccionError = when {
-            currentState.userType == "Empleado" -> null
+            currentState.userType == "Empleado" || currentState.userType == "Admin" -> null
             currentState.direccion.isBlank() -> "La dirección es obligatoria"
             currentState.direccion.length <= 10 -> "La dirección debe tener más de 10 caracteres"
             currentState.direccion.length >= 150 -> "La dirección debe tener menos de 150 caracteres"
@@ -228,21 +241,26 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                         username = currentState.username.trim(),
                         nombre = currentState.nombre.trim(),
                         apellidos = currentState.apellidos.trim(),
-                        direccion = if (currentState.userType == "Empleado") currentState.position else currentState.direccion.trim(),
+                        direccion = when (currentState.userType) {
+                            "Empleado" -> currentState.position
+                            "Admin" -> "Administrador"
+                            else -> currentState.direccion.trim()
+                        },
                         telefono = currentState.telefono.trim(),
                         email = currentState.email.trim(),
-                        password = currentState.password.trim()
+                        password = currentState.password.trim(),
+                        userType = currentState.userType
                     )
                 )
 
                 // 2. Insert into the selected database table (Employees, Clients, or Suppliers)
                 when (currentState.userType) {
-                    "Empleado" -> {
+                    "Empleado", "Admin" -> {
                         repository.insertEmployee(
                             EmployeeEntity(
                                 firstName = currentState.nombre.trim(),
                                 lastName = currentState.apellidos.trim(),
-                                position = currentState.position,
+                                position = if (currentState.userType == "Admin") "Administrador" else currentState.position,
                                 email = currentState.email.trim(),
                                 phone = currentState.telefono.trim(),
                                 address = null,

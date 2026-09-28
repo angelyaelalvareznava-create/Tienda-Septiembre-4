@@ -31,7 +31,10 @@ fun HomeScreen(
 ) {
     ScreenBackground {
         Column(modifier = Modifier.fillMaxSize()) {
-            NexoTopBar(title = stringResource(R.string.title_home))
+            NexoTopBar(
+                title = stringResource(R.string.title_home),
+                onRegisterClick = onNavigateToRegistration
+            )
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),

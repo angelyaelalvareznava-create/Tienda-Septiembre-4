@@ -38,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -70,30 +69,6 @@ fun EditProfileScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val appliedMsg = stringResource(R.string.msg_profile_updated)
 
-    var isLoggedIn by remember { mutableStateOf(SessionManager.isLoggedIn) }
-
-    // Login state (if not logged in) - NO quick login on EditProfileScreen
-    var loginUsername by rememberSaveable { mutableStateOf("") }
-    var loginPassword by rememberSaveable { mutableStateOf("") }
-
-    val usernameError = when {
-        loginUsername.isEmpty() -> null
-        loginUsername.length < 5 -> "El usuario debe tener al menos 5 caracteres"
-        loginUsername.length >= 20 -> "El usuario debe tener menos de 20 caracteres"
-        !loginUsername.all { it.isLetterOrDigit() || it == '-' || it == '_' } -> "El usuario solo puede contener letras, números, guiones y guiones bajos"
-        else -> null
-    }
-
-    val passwordError = when {
-        loginPassword.isEmpty() -> null
-        loginPassword.any { it.isWhitespace() } -> stringResource(R.string.error_password_space)
-        loginPassword.length < 8 -> stringResource(R.string.error_password_min_length)
-        loginPassword.none { it.isDigit() } -> stringResource(R.string.error_password_digit)
-        loginPassword.none { it.isUpperCase() } -> stringResource(R.string.error_password_uppercase)
-        loginPassword.none { !it.isLetterOrDigit() } -> stringResource(R.string.error_password_special)
-        else -> null
-    }
-
     // Profile edit state
     var currentUser: User? by remember { mutableStateOf(null) }
     var editNombre by rememberSaveable { mutableStateOf("") }
@@ -105,8 +80,8 @@ fun EditProfileScreen(
     var editAddressOrPosition by rememberSaveable { mutableStateOf("") }
     var isEmployee by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(isLoggedIn, SessionManager.loggedInUsername) {
-        if (isLoggedIn && SessionManager.loggedInUsername.isNotEmpty()) {
+    LaunchedEffect(SessionManager.loggedInUsername) {
+        if (SessionManager.isLoggedIn && SessionManager.loggedInUsername.isNotEmpty()) {
             val db = AppDatabase.getDatabase(context)
             val user = withContext(Dispatchers.IO) {
                 db.userDao().getUserByUsername(SessionManager.loggedInUsername)
@@ -120,7 +95,7 @@ fun EditProfileScreen(
                 editPassword = user.password
                 editConfirmPassword = user.password
                 editAddressOrPosition = user.direccion
-                isEmployee = user.direccion in listOf("Encargado", "Auxiliar", "Administración")
+                isEmployee = user.direccion in listOf("Encargado", "Auxiliar", "Administración") || user.userType == "Empleado" || user.userType == "Admin"
             }
         }
     }
@@ -132,13 +107,11 @@ fun EditProfileScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             NexoTopBar(title = stringResource(R.string.title_edit_profile), onBackClick = onBack)
 
-            if (!isLoggedIn) {
-                // Login Prompt View (NO quick login)
+            if (!SessionManager.isLoggedIn) {
+                // Not logged in message
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .imePadding()
                         .padding(24.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -146,95 +119,30 @@ fun EditProfileScreen(
                     AdminCard {
                         Column(
                             modifier = Modifier.padding(24.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             Text(
-                                text = "Autenticación Requerida",
+                                text = "No has iniciado sesión",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = "Inicia sesión con tu nombre de usuario y contraseña para editar tu perfil.",
+                                text = "Por favor inicia sesión para ver y editar tu perfil.",
                                 style = MaterialTheme.typography.bodySmall,
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-
-                            NexoTextField(
-                                value = loginUsername,
-                                onValueChange = { loginUsername = it },
-                                label = stringResource(R.string.label_username),
-                                placeholder = stringResource(R.string.placeholder_username),
-                                errorMessage = usernameError,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-                            )
-
-                            NexoPasswordTextField(
-                                value = loginPassword,
-                                onValueChange = { loginPassword = it },
-                                label = stringResource(R.string.label_password),
-                                placeholder = stringResource(R.string.placeholder_password),
-                                errorMessage = passwordError,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done)
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
                             AdminButton(
-                                text = stringResource(R.string.btn_login),
-                                onClick = {
-                                    val errorMsg = when {
-                                        loginUsername.isBlank() && loginPassword.isBlank() -> "Por favor ingresa usuario y contraseña"
-                                        loginUsername.isBlank() -> "El usuario es obligatorio"
-                                        loginPassword.isBlank() -> "La contraseña es obligatoria"
-                                        usernameError != null -> usernameError
-                                        passwordError != null -> passwordError
-                                        else -> null
-                                    }
-                                    if (errorMsg != null) {
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar(
-                                                message = errorMsg,
-                                                duration = SnackbarDuration.Short
-                                            )
-                                        }
-                                    } else {
-                                        coroutineScope.launch {
-                                            try {
-                                                val database = AppDatabase.getDatabase(context.applicationContext)
-                                                val dbUser = withContext(Dispatchers.IO) {
-                                                    database.userDao().getUserByCredentials(loginUsername.trim(), loginPassword.trim())
-                                                }
-                                                if (dbUser != null) {
-                                                    SessionManager.login(dbUser.username)
-                                                    isLoggedIn = true
-                                                } else {
-                                                    loginUsername = ""
-                                                    loginPassword = ""
-                                                    snackbarHostState.showSnackbar(
-                                                        message = "Usuario o contraseña no encontrados en la base de datos",
-                                                        duration = SnackbarDuration.Long
-                                                    )
-                                                }
-                                            } catch (e: Exception) {
-                                                loginUsername = ""
-                                                loginPassword = ""
-                                                snackbarHostState.showSnackbar(
-                                                    message = "Usuario o contraseña no encontrados en la base de datos",
-                                                    duration = SnackbarDuration.Long
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
+                                text = "Ir a Iniciar Sesión",
+                                onClick = onBack
                             )
                         }
                     }
                 }
             } else {
-                // Edit Profile View (Same options as registration)
+                // Edit Profile View (Direct access without re-login)
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -279,7 +187,9 @@ fun EditProfileScreen(
                                 placeholder = stringResource(R.string.placeholder_last_name)
                             )
 
-                            if (isEmployee) {
+                            if (currentUser?.userType == "Admin") {
+                                // Admin has no position and no address
+                            } else if (isEmployee) {
                                 EditPositionDropdown(
                                     selectedPosition = editAddressOrPosition,
                                     onPositionSelected = { editAddressOrPosition = it }
@@ -342,7 +252,7 @@ fun EditProfileScreen(
                                             apellidos = editApellidos.trim(),
                                             telefono = editTelefono.trim(),
                                             email = editEmail.trim(),
-                                            direccion = editAddressOrPosition.trim(),
+                                            direccion = if (user.userType == "Admin") "Administrador" else editAddressOrPosition.trim(),
                                             password = editPassword.trim()
                                         )
                                         coroutineScope.launch {
@@ -359,7 +269,7 @@ fun EditProfileScreen(
                                                         emp.copy(
                                                             firstName = editNombre.trim(),
                                                             lastName = editApellidos.trim(),
-                                                            position = editAddressOrPosition.trim(),
+                                                            position = if (user.userType == "Admin") "Administrador" else editAddressOrPosition.trim(),
                                                             phone = editTelefono.trim(),
                                                             email = editEmail.trim()
                                                         )
@@ -404,10 +314,10 @@ fun EditProfileScreen(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             AdminButton(
-                                text = "Cerrar sesión",
+                                text = "Cerrar sesión (Sign out)",
                                 onClick = {
                                     SessionManager.logout()
-                                    isLoggedIn = false
+                                    onBack()
                                 }
                             )
                         }
