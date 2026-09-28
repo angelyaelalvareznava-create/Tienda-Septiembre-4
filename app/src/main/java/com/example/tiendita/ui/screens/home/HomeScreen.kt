@@ -27,13 +27,14 @@ fun HomeScreen(
     onNavigateToInventory: () -> Unit,
     onNavigateToMovements: () -> Unit,
     onNavigateToDatabase: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onNavigateToLogin: () -> Unit
 ) {
     ScreenBackground {
         Column(modifier = Modifier.fillMaxSize()) {
             NexoTopBar(
                 title = stringResource(R.string.title_home),
-                onRegisterClick = onNavigateToRegistration
+                onLoginClick = onNavigateToLogin
             )
 
             LazyColumn(
@@ -90,7 +91,8 @@ private fun HomeScreenPreview() {
             onNavigateToInventory = {},
             onNavigateToMovements = {},
             onNavigateToDatabase = {},
-            onLogout = {}
+            onLogout = {},
+            onNavigateToLogin = {}
         )
     }
 }

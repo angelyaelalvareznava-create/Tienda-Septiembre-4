@@ -21,7 +21,7 @@ import com.example.tiendita.utils.SessionManager
 fun NexoTopBar(
     title: String,
     onBackClick: (() -> Unit)? = null,
-    onRegisterClick: (() -> Unit)? = null,
+    onLoginClick: (() -> Unit)? = null,
     showUserStatus: Boolean = true
 ) {
     Surface(
@@ -75,7 +75,6 @@ fun NexoTopBar(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         if (SessionManager.isLoggedIn) {
-                            // Non-interactive text box showing the username of whoever signed in
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
                                 color = MaterialTheme.colorScheme.surface,
@@ -95,14 +94,14 @@ fun NexoTopBar(
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
-                            if (onRegisterClick != null) {
+                            if (onLoginClick != null) {
                                 Surface(
                                     shape = RoundedCornerShape(8.dp),
                                     color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.clickable(onClick = onRegisterClick)
+                                    modifier = Modifier.clickable(onClick = onLoginClick)
                                 ) {
                                     Text(
-                                        text = "Registrar",
+                                        text = "Log In",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onPrimary,

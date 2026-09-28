@@ -16,6 +16,7 @@ import com.example.tiendita.ui.screens.login.LoginScreen
 import com.example.tiendita.ui.screens.registration.UserFormScreen
 import com.example.tiendita.ui.screens.suppliers.SuppliersScreen
 import com.example.tiendita.ui.screens.welcome.WelcomeScreen
+import com.example.tiendita.utils.SessionManager
 import com.example.tiendita.viewmodel.UserViewModel
 
 @Composable
@@ -62,6 +63,12 @@ fun NexoNavGraph(
                 onNavigateToMovements = { navController.navigate(NexoDestination.Movements) },
                 onNavigateToDatabase = { navController.navigate(NexoDestination.DatabaseInspection) },
                 onLogout = {
+                    SessionManager.logout()
+                    navController.navigate(NexoDestination.Login) {
+                        popUpTo(NexoDestination.Home) { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
                     navController.navigate(NexoDestination.Login) {
                         popUpTo(NexoDestination.Home) { inclusive = true }
                     }

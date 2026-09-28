@@ -194,7 +194,7 @@ fun LoginScreen(
                         AdminButton(
                             text = "Acceso Rápido (Inicio)",
                             onClick = {
-                                SessionManager.login(username.ifBlank { "admin" })
+                                // Guest access without login credentials -> Session remains logged out (false)
                                 onLogin()
                             }
                         )
