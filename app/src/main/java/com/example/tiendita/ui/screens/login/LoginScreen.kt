@@ -162,10 +162,11 @@ fun LoginScreen(
                                             }
                                             val isDefaultAdmin = (username.trim().lowercase() == "admin" && password == "Admin123!")
                                             if (dbUser != null) {
-                                                SessionManager.login(dbUser.username)
+                                                val isAdmin = (dbUser.userType == "Admin" || dbUser.username.lowercase() == "admin")
+                                                SessionManager.login(dbUser.username, admin = isAdmin)
                                                 onLogin()
                                             } else if (isDefaultAdmin) {
-                                                SessionManager.login("admin")
+                                                SessionManager.login("admin", admin = true)
                                                 onLogin()
                                             } else {
                                                 username = ""

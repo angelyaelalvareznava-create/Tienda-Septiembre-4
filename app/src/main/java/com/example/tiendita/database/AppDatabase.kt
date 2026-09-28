@@ -8,6 +8,7 @@ import androidx.room.TypeConverters
 import com.example.tiendita.dao.UserDao
 import com.example.tiendita.data.local.converter.EnumConverters
 import com.example.tiendita.data.local.dao.AccountDao
+import com.example.tiendita.data.local.dao.AdminDao
 import com.example.tiendita.data.local.dao.CalendarDao
 import com.example.tiendita.data.local.dao.ClientDao
 import com.example.tiendita.data.local.dao.EmployeeDao
@@ -15,6 +16,7 @@ import com.example.tiendita.data.local.dao.InventoryDao
 import com.example.tiendita.data.local.dao.ProductDao
 import com.example.tiendita.data.local.dao.SupplierDao
 import com.example.tiendita.data.local.dao.WarehouseDao
+import com.example.tiendita.data.local.entity.AdminEntity
 import com.example.tiendita.data.local.entity.CalendarEventEntity
 import com.example.tiendita.data.local.entity.CategoryEntity
 import com.example.tiendita.data.local.entity.ClientEntity
@@ -34,6 +36,7 @@ import com.example.tiendita.model.User
         User::class,
         UserAccountEntity::class,
         EmployeeEntity::class,
+        AdminEntity::class,
         ClientEntity::class,
         SupplierEntity::class,
         CategoryEntity::class,
@@ -45,7 +48,7 @@ import com.example.tiendita.model.User
         MovementLineEntity::class,
         CalendarEventEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 @TypeConverters(EnumConverters::class)
@@ -54,6 +57,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun accountDao(): AccountDao
     abstract fun employeeDao(): EmployeeDao
+    abstract fun adminDao(): AdminDao
     abstract fun clientDao(): ClientDao
     abstract fun supplierDao(): SupplierDao
     abstract fun productDao(): ProductDao

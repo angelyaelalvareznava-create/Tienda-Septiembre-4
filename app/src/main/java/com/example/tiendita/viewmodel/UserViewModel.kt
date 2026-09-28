@@ -2,6 +2,7 @@ package com.example.tiendita.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tiendita.data.local.entity.AdminEntity
 import com.example.tiendita.data.local.entity.ClientEntity
 import com.example.tiendita.data.local.entity.EmployeeEntity
 import com.example.tiendita.data.local.entity.SupplierEntity
@@ -253,18 +254,29 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                     )
                 )
 
-                // 2. Insert into the selected database table (Employees, Clients, or Suppliers)
+                // 2. Insert into the selected database table (Employees, Admins, Clients, or Suppliers)
                 when (currentState.userType) {
-                    "Empleado", "Admin" -> {
+                    "Empleado" -> {
                         repository.insertEmployee(
                             EmployeeEntity(
                                 firstName = currentState.nombre.trim(),
                                 lastName = currentState.apellidos.trim(),
-                                position = if (currentState.userType == "Admin") "Administrador" else currentState.position,
+                                position = currentState.position,
                                 email = currentState.email.trim(),
                                 phone = currentState.telefono.trim(),
                                 address = null,
                                 hireDate = System.currentTimeMillis(),
+                                active = true
+                            )
+                        )
+                    }
+                    "Admin" -> {
+                        repository.insertAdmin(
+                            AdminEntity(
+                                firstName = currentState.nombre.trim(),
+                                lastName = currentState.apellidos.trim(),
+                                email = currentState.email.trim(),
+                                phone = currentState.telefono.trim(),
                                 active = true
                             )
                         )

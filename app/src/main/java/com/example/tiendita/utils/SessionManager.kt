@@ -11,13 +11,18 @@ object SessionManager {
     var loggedInUsername by mutableStateOf("")
         private set
 
-    fun login(username: String) {
+    var isAdmin by mutableStateOf(false)
+        private set
+
+    fun login(username: String, admin: Boolean = false) {
         isLoggedIn = true
         loggedInUsername = username.ifBlank { "admin" }
+        isAdmin = admin || loggedInUsername.lowercase() == "admin"
     }
 
     fun logout() {
         isLoggedIn = false
         loggedInUsername = ""
+        isAdmin = false
     }
 }

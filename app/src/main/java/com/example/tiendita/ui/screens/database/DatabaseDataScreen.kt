@@ -44,6 +44,7 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
 
     val clients by database.clientDao().getActiveClientsFlow().collectAsState(initial = emptyList())
     val employees by database.employeeDao().getActiveEmployeesFlow().collectAsState(initial = emptyList())
+    val admins by database.adminDao().getActiveAdminsFlow().collectAsState(initial = emptyList())
     val suppliers by database.supplierDao().getActiveSuppliersFlow().collectAsState(initial = emptyList())
     val products by database.productDao().getActiveProductsFlow().collectAsState(initial = emptyList())
     val users by database.userDao().getAllUsersFlow().collectAsState(initial = emptyList())
@@ -51,7 +52,7 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    val isAdmin = SessionManager.loggedInUsername.lowercase() == "admin" ||
+    val isAdmin = SessionManager.isAdmin ||
             users.find { it.username == SessionManager.loggedInUsername }?.userType == "Admin"
 
     Scaffold(
@@ -125,17 +126,17 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "📊 Clientes en Base de Datos (${clients.size})",
+                                    text = "👑 Administradores (${admins.size})",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                if (clients.isEmpty()) {
-                                    Text("No hay clientes registrados.", style = MaterialTheme.typography.bodySmall)
+                                if (admins.isEmpty()) {
+                                    Text("No hay administradores registrados.", style = MaterialTheme.typography.bodySmall)
                                 } else {
-                                    clients.forEach { client ->
-                                        Text("• ${client.name} | Tel: ${client.phone ?: "N/A"} | Email: ${client.email ?: "N/A"}", style = MaterialTheme.typography.bodySmall)
+                                    admins.forEach { ad ->
+                                        Text("• ${ad.firstName} ${ad.lastName} | Tel: ${ad.phone} | Email: ${ad.email}", style = MaterialTheme.typography.bodySmall)
                                     }
                                 }
                             }
@@ -162,6 +163,32 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
                                 } else {
                                     employees.forEach { emp ->
                                         Text("• ${emp.firstName} ${emp.lastName} (${emp.position}) | Tel: ${emp.phone ?: "N/A"}", style = MaterialTheme.typography.bodySmall)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        AdminCard {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "📊 Clientes en Base de Datos (${clients.size})",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                if (clients.isEmpty()) {
+                                    Text("No hay clientes registrados.", style = MaterialTheme.typography.bodySmall)
+                                } else {
+                                    clients.forEach { client ->
+                                        Text("• ${client.name} | Tel: ${client.phone ?: "N/A"} | Email: ${client.email ?: "N/A"}", style = MaterialTheme.typography.bodySmall)
                                     }
                                 }
                             }
