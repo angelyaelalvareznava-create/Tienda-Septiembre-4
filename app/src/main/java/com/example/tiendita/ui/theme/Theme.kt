@@ -6,42 +6,41 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import com.example.tiendita.utils.SessionManager
+
+private val ColorOnVariant = Color(0xFF355A57)
 
 private val LightColors = lightColorScheme(
     primary = NexoPrimary,
     onPrimary = NexoOnPrimary,
     background = NexoBackground,
+    onBackground = NexoOnSurface,
     surface = NexoSurface,
     onSurface = NexoOnSurface,
+    surfaceVariant = NexoPrimaryContainer,
+    onSurfaceVariant = ColorOnVariant,
     primaryContainer = NexoPrimaryContainer,
     onPrimaryContainer = NexoSurfaceDark,
     outline = NexoOutline,
-    outlineVariant = NexoOutline
+    outlineVariant = Color(0xFFD5E3E1),
+    secondary = NexoElectric,
+    tertiary = NexoAccent
 )
 
 private val DarkColors = darkColorScheme(
-    primary = NexoPrimaryContainer,
-    onPrimary = NexoSurfaceDark,
-    background = NexoSurfaceDark,
-    surface = NexoSurface,
-    onSurface = NexoOnSurface,
-    primaryContainer = NexoPrimary,
-    onPrimaryContainer = NexoOnPrimary,
-    outline = NexoOutline,
-    outlineVariant = NexoOutline
-)
-
-private val AdminLightColors = lightColorScheme(
-    primary = Color(0xFF6A1B9A), // Deep Royal Purple for Admin
-    onPrimary = Color.White,
-    background = Color(0xFFFAF2FB),
-    surface = Color.White,
-    onSurface = Color(0xFF2E1A47),
-    primaryContainer = Color(0xFFE1BEE7),
-    onPrimaryContainer = Color(0xFF4A148C),
-    outline = Color(0xFFBA68C8),
-    outlineVariant = Color(0xFFCE93D8)
+    primary = Color(0xFF6EE7D8),
+    onPrimary = Color(0xFF003A35),
+    background = Color(0xFF0B171A),
+    onBackground = Color(0xFFE5F2F0),
+    surface = Color(0xFF15262A),
+    onSurface = Color(0xFFE5F2F0),
+    surfaceVariant = Color(0xFF244044),
+    onSurfaceVariant = Color(0xFFB9CFCC),
+    primaryContainer = Color(0xFF15534D),
+    onPrimaryContainer = Color(0xFFD4FFF5),
+    outline = Color(0xFF52716E),
+    outlineVariant = Color(0xFF334D4B),
+    secondary = Color(0xFFB9A2FF),
+    tertiary = Color(0xFFFF9D7A)
 )
 
 @Composable
@@ -50,14 +49,8 @@ fun NexoStockTheme(
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colors = if (SessionManager.isAdmin) {
-        AdminLightColors
-    } else {
-        if (darkTheme) DarkColors else LightColors
-    }
-
     MaterialTheme(
-        colorScheme = colors,
+        colorScheme = if (darkTheme) DarkColors else LightColors,
         typography = Typography,
         content = content
     )

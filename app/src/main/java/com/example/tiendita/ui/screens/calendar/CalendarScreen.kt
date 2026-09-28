@@ -12,9 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,18 +59,19 @@ fun CalendarScreen(
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     )
 
-    ScreenBackground(modifier = modifier) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            NexoTopBar(title = stringResource(R.string.title_calendar), onBackClick = onBack)
-
+    Scaffold(
+        topBar = { NexoTopBar(title = stringResource(R.string.title_calendar), onBackClick = onBack, applyStatusBarInsets = false) }
+    ) { innerPadding ->
+        ScreenBackground(modifier = modifier.padding(innerPadding)) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 18.dp, vertical = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                AdminCard {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                AdminCard(modifier = Modifier.align(Alignment.CenterHorizontally).widthIn(max = 560.dp)) {
+                    Column(modifier = Modifier.padding(18.dp)) {
                         // Header: Prev, Month/Year, Next
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -179,18 +184,13 @@ fun CalendarScreen(
                                         }
                                     }
                                 }
-                                // Fill remaining slots in the last row if needed
-                                val remaining = 7 - row.size
-                                for (i in 0 until remaining) {
-                                    Spacer(modifier = Modifier.weight(1f).size(40.dp))
-                                }
                             }
                         }
                     }
                 }
 
                 // Selected Date Info Card
-                AdminCard {
+                AdminCard(modifier = Modifier.align(Alignment.CenterHorizontally).widthIn(max = 560.dp)) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
