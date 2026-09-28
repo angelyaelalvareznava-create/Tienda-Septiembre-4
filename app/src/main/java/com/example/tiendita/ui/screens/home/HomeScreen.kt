@@ -15,6 +15,7 @@ import com.example.tiendita.ui.components.AdminButton
 import com.example.tiendita.ui.components.NexoTopBar
 import com.example.tiendita.ui.components.ScreenBackground
 import com.example.tiendita.ui.theme.NexoStockTheme
+import com.example.tiendita.utils.SessionManager
 
 @Composable
 fun HomeScreen(
@@ -42,8 +43,11 @@ fun HomeScreen(
                 contentPadding = PaddingValues(24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                item {
-                    AdminButton(text = stringResource(R.string.menu_database), onClick = onNavigateToDatabase)
+                // Only show Database button if logged in AND is Admin
+                if (SessionManager.isLoggedIn && SessionManager.isAdmin) {
+                    item {
+                        AdminButton(text = stringResource(R.string.menu_database), onClick = onNavigateToDatabase)
+                    }
                 }
                 item {
                     AdminButton(text = stringResource(R.string.menu_calendar), onClick = onNavigateToCalendar)
@@ -57,8 +61,11 @@ fun HomeScreen(
                 item {
                     AdminButton(text = stringResource(R.string.menu_clients), onClick = onNavigateToClients)
                 }
-                item {
-                    AdminButton(text = stringResource(R.string.menu_register_user), onClick = onNavigateToRegistration)
+                // Only show Register User button if logged in AND is Admin
+                if (SessionManager.isLoggedIn && SessionManager.isAdmin) {
+                    item {
+                        AdminButton(text = stringResource(R.string.menu_register_user), onClick = onNavigateToRegistration)
+                    }
                 }
                 item {
                     AdminButton(text = stringResource(R.string.menu_edit_profile), onClick = onNavigateToEditProfile)

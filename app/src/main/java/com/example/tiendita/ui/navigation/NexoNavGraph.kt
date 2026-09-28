@@ -11,6 +11,7 @@ import com.example.tiendita.ui.screens.database.DatabaseDataScreen
 import com.example.tiendita.ui.screens.employees.EmployeesScreen
 import com.example.tiendita.ui.screens.profile.EditProfileScreen
 import com.example.tiendita.ui.screens.common.FeaturePlaceholderScreen
+import com.example.tiendita.ui.screens.common.GuestRestrictionScreen
 import com.example.tiendita.ui.screens.home.HomeScreen
 import com.example.tiendita.ui.screens.login.LoginScreen
 import com.example.tiendita.ui.screens.registration.UserFormScreen
@@ -44,9 +45,6 @@ fun NexoNavGraph(
                     navController.navigate(NexoDestination.Home) {
                         popUpTo(NexoDestination.Login) { inclusive = true }
                     }
-                },
-                onRegister = {
-                    navController.navigate(NexoDestination.Registration)
                 }
             )
         }
@@ -57,8 +55,20 @@ fun NexoNavGraph(
                 onNavigateToSuppliers = { navController.navigate(NexoDestination.Suppliers) },
                 onNavigateToEmployees = { navController.navigate(NexoDestination.Employees) },
                 onNavigateToClients = { navController.navigate(NexoDestination.Clients) },
-                onNavigateToRegistration = { navController.navigate(NexoDestination.Registration) },
-                onNavigateToEditProfile = { navController.navigate(NexoDestination.EditProfile) },
+                onNavigateToRegistration = {
+                    if (SessionManager.isLoggedIn && SessionManager.isAdmin) {
+                        navController.navigate(NexoDestination.Registration)
+                    } else {
+                        navController.navigate(NexoDestination.GuestRestriction)
+                    }
+                },
+                onNavigateToEditProfile = {
+                    if (SessionManager.isLoggedIn) {
+                        navController.navigate(NexoDestination.EditProfile)
+                    } else {
+                        navController.navigate(NexoDestination.GuestRestriction)
+                    }
+                },
                 onNavigateToInventory = { navController.navigate(NexoDestination.Inventory) },
                 onNavigateToMovements = { navController.navigate(NexoDestination.Movements) },
                 onNavigateToDatabase = { navController.navigate(NexoDestination.DatabaseInspection) },
@@ -79,6 +89,17 @@ fun NexoNavGraph(
         composable(NexoDestination.Registration) {
             UserFormScreen(
                 viewModel = viewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(NexoDestination.GuestRestriction) {
+            GuestRestrictionScreen(
+                onNavigateToLogin = {
+                    navController.navigate(NexoDestination.Login) {
+                        popUpTo(NexoDestination.Home) { inclusive = true }
+                    }
+                },
                 onBack = { navController.popBackStack() }
             )
         }

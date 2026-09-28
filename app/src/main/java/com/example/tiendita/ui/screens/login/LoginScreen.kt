@@ -1,6 +1,5 @@
 package com.example.tiendita.ui.screens.login
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -52,8 +51,7 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun LoginScreen(
-    onLogin: () -> Unit,
-    onRegister: () -> Unit
+    onLogin: () -> Unit
 ) {
     val context = LocalContext.current
     var username by rememberSaveable { mutableStateOf("") }
@@ -201,16 +199,6 @@ fun LoginScreen(
                         )
 
                         Text(
-                            text = stringResource(R.string.btn_register_link),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .clickable(onClick = onRegister)
-                                .padding(8.dp)
-                        )
-
-                        Text(
                             text = stringResource(R.string.msg_academic_login),
                             style = MaterialTheme.typography.bodySmall,
                             textAlign = TextAlign.Center,
@@ -242,6 +230,6 @@ fun LoginScreen(
 @Composable
 private fun LoginScreenPreview() {
     NexoStockTheme {
-        LoginScreen(onLogin = {}, onRegister = {})
+        LoginScreen(onLogin = {})
     }
 }

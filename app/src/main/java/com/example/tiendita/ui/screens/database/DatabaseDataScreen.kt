@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -19,8 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -29,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.tiendita.R
 import com.example.tiendita.database.AppDatabase
+import com.example.tiendita.model.User
 import com.example.tiendita.ui.components.AdminCard
 import com.example.tiendita.ui.components.NexoTopBar
 import com.example.tiendita.ui.components.ScreenBackground
@@ -52,8 +56,42 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
+    var userToDelete by remember { mutableStateOf<User?>(null) }
+
     val isAdmin = SessionManager.isAdmin ||
             users.find { it.username == SessionManager.loggedInUsername }?.userType == "Admin"
+
+    if (userToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { userToDelete = null },
+            title = { Text("¿Estás seguro?") },
+            text = { Text("¿Realmente deseas eliminar al usuario '${userToDelete?.username}'? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val target = userToDelete
+                        userToDelete = null
+                        if (target != null) {
+                            coroutineScope.launch {
+                                withContext(Dispatchers.IO) {
+                                    database.userDao().deleteUser(target)
+                                }
+                                snackbarHostState.showSnackbar("Usuario ${target.username} eliminado correctamente")
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Eliminar")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { userToDelete = null }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -97,14 +135,7 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
                                             }
                                             if (isAdmin) {
                                                 Button(
-                                                    onClick = {
-                                                        coroutineScope.launch {
-                                                            withContext(Dispatchers.IO) {
-                                                                database.userDao().deleteUser(user)
-                                                            }
-                                                            snackbarHostState.showSnackbar("Usuario ${user.username} eliminado correctamente")
-                                                        }
-                                                    },
+                                                    onClick = { userToDelete = user },
                                                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                                                 ) {
                                                     Text("Eliminar", style = MaterialTheme.typography.labelSmall)

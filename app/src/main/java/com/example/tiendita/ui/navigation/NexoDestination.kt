@@ -13,4 +13,5 @@ object NexoDestination {
     const val Inventory = "inventory"
     const val Movements = "movements"
     const val DatabaseInspection = "database_inspection"
+    const val GuestRestriction = "guest_restriction"
 }
