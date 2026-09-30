@@ -25,6 +25,9 @@ interface AccountDao {
     @Query("SELECT * FROM user_accounts WHERE normalized_username = :normalizedUsername")
     suspend fun getAccountByNormalizedUsername(normalizedUsername: String): UserAccountEntity?
 
+    @Query("SELECT * FROM user_accounts WHERE employee_id = :employeeId")
+    suspend fun getAccountByEmployeeId(employeeId: Long): UserAccountEntity?
+
     @Query("SELECT COUNT(*) FROM user_accounts")
     suspend fun countAccounts(): Int
 
