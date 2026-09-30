@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -23,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,10 +59,52 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
+    var searchQuery by rememberSaveable { mutableStateOf("") }
     var userToDelete by remember { mutableStateOf<User?>(null) }
 
     val isAdmin = SessionManager.isAdmin ||
             users.find { it.username == SessionManager.loggedInUsername }?.userType == "Admin"
+
+    // Filtered lists based on search query
+    val filteredUsers = users.filter {
+        searchQuery.isBlank() ||
+                it.username.contains(searchQuery, true) ||
+                it.nombre.contains(searchQuery, true) ||
+                it.apellidos.contains(searchQuery, true) ||
+                it.email.contains(searchQuery, true)
+    }
+
+    val filteredAdmins = admins.filter {
+        searchQuery.isBlank() ||
+                it.firstName.contains(searchQuery, true) ||
+                it.lastName.contains(searchQuery, true) ||
+                it.email.contains(searchQuery, true)
+    }
+
+    val filteredEmployees = employees.filter {
+        searchQuery.isBlank() ||
+                it.firstName.contains(searchQuery, true) ||
+                it.lastName.contains(searchQuery, true) ||
+                it.position.contains(searchQuery, true)
+    }
+
+    val filteredClients = clients.filter {
+        searchQuery.isBlank() ||
+                it.name.contains(searchQuery, true) ||
+                (it.email?.contains(searchQuery, true) == true)
+    }
+
+    val filteredSuppliers = suppliers.filter {
+        searchQuery.isBlank() ||
+                it.companyName.contains(searchQuery, true) ||
+                (it.contactName?.contains(searchQuery, true) == true)
+    }
+
+    val filteredProducts = products.filter {
+        searchQuery.isBlank() ||
+                it.name.contains(searchQuery, true) ||
+                it.sku.contains(searchQuery, true)
+    }
 
     if (userToDelete != null) {
         AlertDialog(
@@ -100,9 +145,24 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
             Column(modifier = Modifier.fillMaxSize()) {
                 NexoTopBar(title = stringResource(R.string.title_database_inspection), onBackClick = onBack)
 
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 12.dp)
+                ) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        label = { Text("Buscar en la base de datos...") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                }
+
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(24.dp),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
@@ -114,16 +174,16 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "🔑 Usuarios Registrados (${users.size})" + if (isAdmin) " - [Admin: Privilegios de eliminación]" else "",
+                                    text = "🔑 Usuarios Registrados (${filteredUsers.size}/${users.size})" + if (isAdmin) " - [Admin]" else "",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                if (users.isEmpty()) {
-                                    Text("No hay usuarios registrados.", style = MaterialTheme.typography.bodySmall)
+                                if (filteredUsers.isEmpty()) {
+                                    Text("No se encontraron usuarios.", style = MaterialTheme.typography.bodySmall)
                                 } else {
-                                    users.forEach { user ->
+                                    filteredUsers.forEach { user ->
                                         Row(
                                             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -157,16 +217,16 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "👑 Administradores (${admins.size})",
+                                    text = "👑 Administradores (${filteredAdmins.size}/${admins.size})",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                if (admins.isEmpty()) {
-                                    Text("No hay administradores registrados.", style = MaterialTheme.typography.bodySmall)
+                                if (filteredAdmins.isEmpty()) {
+                                    Text("No se encontraron administradores.", style = MaterialTheme.typography.bodySmall)
                                 } else {
-                                    admins.forEach { ad ->
+                                    filteredAdmins.forEach { ad ->
                                         Text("• ${ad.firstName} ${ad.lastName} | Tel: ${ad.phone} | Email: ${ad.email}", style = MaterialTheme.typography.bodySmall)
                                     }
                                 }
@@ -183,16 +243,16 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "👥 Empleados en Base de Datos (${employees.size})",
+                                    text = "👥 Empleados (${filteredEmployees.size}/${employees.size})",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                if (employees.isEmpty()) {
-                                    Text("No hay empleados registrados.", style = MaterialTheme.typography.bodySmall)
+                                if (filteredEmployees.isEmpty()) {
+                                    Text("No se encontraron empleados.", style = MaterialTheme.typography.bodySmall)
                                 } else {
-                                    employees.forEach { emp ->
+                                    filteredEmployees.forEach { emp ->
                                         Text("• ${emp.firstName} ${emp.lastName} (${emp.position}) | Tel: ${emp.phone ?: "N/A"}", style = MaterialTheme.typography.bodySmall)
                                     }
                                 }
@@ -209,16 +269,16 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "📊 Clientes en Base de Datos (${clients.size})",
+                                    text = "📊 Clientes (${filteredClients.size}/${clients.size})",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                if (clients.isEmpty()) {
-                                    Text("No hay clientes registrados.", style = MaterialTheme.typography.bodySmall)
+                                if (filteredClients.isEmpty()) {
+                                    Text("No se encontraron clientes.", style = MaterialTheme.typography.bodySmall)
                                 } else {
-                                    clients.forEach { client ->
+                                    filteredClients.forEach { client ->
                                         Text("• ${client.name} | Tel: ${client.phone ?: "N/A"} | Email: ${client.email ?: "N/A"}", style = MaterialTheme.typography.bodySmall)
                                     }
                                 }
@@ -235,16 +295,16 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "📦 Proveedores en Base de Datos (${suppliers.size})",
+                                    text = "📦 Proveedores (${filteredSuppliers.size}/${suppliers.size})",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                if (suppliers.isEmpty()) {
-                                    Text("No hay proveedores registrados.", style = MaterialTheme.typography.bodySmall)
+                                if (filteredSuppliers.isEmpty()) {
+                                    Text("No se encontraron proveedores.", style = MaterialTheme.typography.bodySmall)
                                 } else {
-                                    suppliers.forEach { sup ->
+                                    filteredSuppliers.forEach { sup ->
                                         Text("• ${sup.companyName} | Contrato: ${sup.contactName ?: "N/A"} | Tel: ${sup.phone ?: "N/A"}", style = MaterialTheme.typography.bodySmall)
                                     }
                                 }
@@ -261,16 +321,16 @@ fun DatabaseDataScreen(onBack: () -> Unit) {
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "🏷️ Inventario / Productos (${products.size})",
+                                    text = "🏷️ Inventario / Productos (${filteredProducts.size}/${products.size})",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                if (products.isEmpty()) {
-                                    Text("No hay productos en inventario.", style = MaterialTheme.typography.bodySmall)
+                                if (filteredProducts.isEmpty()) {
+                                    Text("No se encontraron productos.", style = MaterialTheme.typography.bodySmall)
                                 } else {
-                                    products.forEach { prod ->
+                                    filteredProducts.forEach { prod ->
                                         Text("• ${prod.name} (SKU: ${prod.sku}) | Venta: \$${(prod.salePriceCents ?: 0) / 100.0}", style = MaterialTheme.typography.bodySmall)
                                     }
                                 }
