@@ -29,6 +29,9 @@ interface AccountDao {
     suspend fun getAccountByEmployeeId(employeeId: Long): UserAccountEntity?
 
     @Query("SELECT COUNT(*) FROM user_accounts")
+    fun observeAccountCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM user_accounts")
     suspend fun countAccounts(): Int
 
     @Query("SELECT COUNT(*) FROM user_accounts WHERE active = 1 AND role = 'ADMIN'")

@@ -17,7 +17,9 @@ import com.example.tiendita.ui.components.AdminButton
 import com.example.tiendita.ui.components.NexoTopBar
 import com.example.tiendita.ui.components.ScreenBackground
 import com.example.tiendita.ui.theme.NexoStockTheme
-import com.example.tiendita.utils.SessionManager
+import com.example.tiendita.ui.components.LocalSessionState
+import com.example.tiendita.session.SessionState
+import com.example.tiendita.data.local.converter.AccountRole
 
 @Composable
 fun HomeScreen(
@@ -33,6 +35,7 @@ fun HomeScreen(
     onLogout: () -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
+    val isAdmin = (LocalSessionState.current as? SessionState.Authenticated)?.account?.role == AccountRole.ADMIN
     Scaffold(
         topBar = {
             NexoTopBar(
@@ -49,7 +52,7 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // Only show Database button if logged in AND is Admin
-                    if (SessionManager.isLoggedIn && SessionManager.isAdmin) {
+                    if (isAdmin) {
                         item {
                             AdminButton(text = stringResource(R.string.menu_database), onClick = onNavigateToDatabase)
                         }
@@ -67,7 +70,7 @@ fun HomeScreen(
                         AdminButton(text = stringResource(R.string.menu_clients), onClick = onNavigateToClients)
                     }
                     // Only show Register User button if logged in AND is Admin
-                    if (SessionManager.isLoggedIn && SessionManager.isAdmin) {
+                    if (isAdmin) {
                         item {
                             AdminButton(text = stringResource(R.string.menu_register_user), onClick = onNavigateToRegistration)
                         }

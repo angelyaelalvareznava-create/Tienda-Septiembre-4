@@ -1,6 +1,7 @@
 package com.example.tiendita.ui.navigation
 
 object NexoDestination {
+    const val InitialAdmin = "initial_admin"
     const val Welcome = "welcome"
     const val Login = "login"
     const val Home = "home"

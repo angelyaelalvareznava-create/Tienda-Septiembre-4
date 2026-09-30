@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.tiendita.data.local.dao.DatabaseStatusDao
 import com.example.tiendita.data.local.dao.AuthMetadataDao
 import com.example.tiendita.data.local.entity.AuthMetadataEntity
 import com.example.tiendita.dao.UserDao
@@ -60,6 +61,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
     abstract fun accountDao(): AccountDao
+    abstract fun databaseStatusDao(): DatabaseStatusDao
     abstract fun authMetadataDao(): AuthMetadataDao
     abstract fun employeeDao(): EmployeeDao
     abstract fun adminDao(): AdminDao

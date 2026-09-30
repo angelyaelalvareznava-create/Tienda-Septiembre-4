@@ -1,281 +1,57 @@
 package com.example.tiendita.ui.screens.database
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.tiendita.R
-import com.example.tiendita.database.AppDatabase
-import com.example.tiendita.model.User
-import com.example.tiendita.ui.components.AdminCard
-import com.example.tiendita.ui.components.NexoTopBar
-import com.example.tiendita.ui.components.ScreenBackground
-import com.example.tiendita.utils.SessionManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.tiendita.ui.components.*
+import com.example.tiendita.viewmodel.*
 
-@Composable
-fun DatabaseDataScreen(onBack: () -> Unit) {
-    val context = LocalContext.current
-    val database = remember { AppDatabase.getDatabase(context) }
-
-    val clients by database.clientDao().getActiveClientsFlow().collectAsState(initial = emptyList())
-    val employees by database.employeeDao().getActiveEmployeesFlow().collectAsState(initial = emptyList())
-    val admins by database.adminDao().getActiveAdminsFlow().collectAsState(initial = emptyList())
-    val suppliers by database.supplierDao().getActiveSuppliersFlow().collectAsState(initial = emptyList())
-    val products by database.productDao().getActiveProductsFlow().collectAsState(initial = emptyList())
-    val users by database.userDao().getAllUsersFlow().collectAsState(initial = emptyList())
-
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
-
-    var userToDelete by remember { mutableStateOf<User?>(null) }
-
-    val isAdmin = SessionManager.isAdmin ||
-            users.find { it.username == SessionManager.loggedInUsername }?.userType == "Admin"
-
-    if (userToDelete != null) {
-        AlertDialog(
-            onDismissRequest = { userToDelete = null },
-            title = { Text("¿Estás seguro?") },
-            text = { Text("¿Realmente deseas eliminar al usuario '${userToDelete?.username}'? Esta acción no se puede deshacer.") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val target = userToDelete
-                        userToDelete = null
-                        if (target != null) {
-                            coroutineScope.launch {
-                                withContext(Dispatchers.IO) {
-                                    database.userDao().deleteUser(target)
-                                }
-                                snackbarHostState.showSnackbar("Usuario ${target.username} eliminado correctamente")
-                            }
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Eliminar")
+@Composable fun DatabaseDataScreen(viewModel: DatabaseStatusViewModel, onBack: () -> Unit) {
+    val state by viewModel.state.collectAsState()
+    ScreenBackground {
+        Column(Modifier.fillMaxSize()) {
+            NexoTopBar(stringResource(R.string.db_title), onBackClick = onBack)
+            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                item {
+                    Text(stringResource(R.string.db_version), style = MaterialTheme.typography.headlineSmall)
+                    AdminButton(stringResource(R.string.db_refresh), enabled = state !is DatabaseStatusState.Loading, onClick = viewModel::refresh)
                 }
-            },
-            dismissButton = {
-                Button(onClick = { userToDelete = null }) {
-                    Text("Cancelar")
-                }
-            }
-        )
-    }
-
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-    ) { innerPadding ->
-        ScreenBackground(modifier = Modifier.padding(innerPadding)) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                NexoTopBar(title = stringResource(R.string.title_database_inspection), onBackClick = onBack)
-
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item {
-                        AdminCard {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = "🔑 Usuarios Registrados (${users.size})" + if (isAdmin) " - [Admin: Privilegios de eliminación]" else "",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                if (users.isEmpty()) {
-                                    Text("No hay usuarios registrados.", style = MaterialTheme.typography.bodySmall)
-                                } else {
-                                    users.forEach { user ->
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Column(modifier = Modifier.weight(1f)) {
-                                                Text("• [${user.userType}] ${user.username} (${user.nombre} ${user.apellidos})", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
-                                                Text("   Email: ${user.email} | Tel: ${user.telefono}", style = MaterialTheme.typography.bodySmall)
-                                            }
-                                            if (isAdmin) {
-                                                Button(
-                                                    onClick = { userToDelete = user },
-                                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                                                ) {
-                                                    Text("Eliminar", style = MaterialTheme.typography.labelSmall)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                when (val current = state) {
+                    DatabaseStatusState.Loading -> item { CircularProgressIndicator(); Text(stringResource(R.string.auth_loading)) }
+                    DatabaseStatusState.Error -> item {
+                        Text(stringResource(R.string.auth_error))
+                        AdminButton(stringResource(R.string.auth_retry), onClick = viewModel::refresh)
                     }
-
-                    item {
-                        AdminCard {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = "👑 Administradores (${admins.size})",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                if (admins.isEmpty()) {
-                                    Text("No hay administradores registrados.", style = MaterialTheme.typography.bodySmall)
-                                } else {
-                                    admins.forEach { ad ->
-                                        Text("• ${ad.firstName} ${ad.lastName} | Tel: ${ad.phone} | Email: ${ad.email}", style = MaterialTheme.typography.bodySmall)
-                                    }
-                                }
+                    is DatabaseStatusState.Data -> {
+                        val counts = current.snapshot.counts
+                        item { Text(stringResource(R.string.db_operational)) }
+                        val rows = listOf(R.string.db_accounts to counts.accounts, R.string.db_admins to counts.administrators,
+                            R.string.db_employees to counts.employees, R.string.db_clients to counts.clients,
+                            R.string.db_suppliers to counts.suppliers, R.string.db_categories to counts.categories,
+                            R.string.db_products to counts.products, R.string.db_warehouses to counts.warehouses,
+                            R.string.db_stock to counts.stock, R.string.db_movements to counts.movements, R.string.db_events to counts.events)
+                        items(rows) { (label, count) -> AdminCard {
+                            Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text(stringResource(label)); Text(count.toString(), style = MaterialTheme.typography.titleMedium)
                             }
-                        }
-                    }
-
-                    item {
-                        AdminCard {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = "👥 Empleados en Base de Datos (${employees.size})",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                if (employees.isEmpty()) {
-                                    Text("No hay empleados registrados.", style = MaterialTheme.typography.bodySmall)
-                                } else {
-                                    employees.forEach { emp ->
-                                        Text("• ${emp.firstName} ${emp.lastName} (${emp.position}) | Tel: ${emp.phone ?: "N/A"}", style = MaterialTheme.typography.bodySmall)
-                                    }
-                                }
+                        } }
+                        item { Text(stringResource(R.string.db_accounts), style = MaterialTheme.typography.titleLarge) }
+                        if (current.snapshot.accounts.isEmpty()) item { Text(stringResource(R.string.db_empty)) }
+                        items(current.snapshot.accounts) { account -> AdminCard {
+                            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(account.username, style = MaterialTheme.typography.titleMedium)
+                                account.displayName?.let { Text(it) }
+                                Text(roleLabel(account.role))
+                                Text(stringResource(if (account.active) R.string.db_active else R.string.db_inactive))
+                                account.employeeId?.let { Text(stringResource(R.string.db_employee_link, it)) }
                             }
-                        }
-                    }
-
-                    item {
-                        AdminCard {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = "📊 Clientes en Base de Datos (${clients.size})",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                if (clients.isEmpty()) {
-                                    Text("No hay clientes registrados.", style = MaterialTheme.typography.bodySmall)
-                                } else {
-                                    clients.forEach { client ->
-                                        Text("• ${client.name} | Tel: ${client.phone ?: "N/A"} | Email: ${client.email ?: "N/A"}", style = MaterialTheme.typography.bodySmall)
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    item {
-                        AdminCard {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = "📦 Proveedores en Base de Datos (${suppliers.size})",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                if (suppliers.isEmpty()) {
-                                    Text("No hay proveedores registrados.", style = MaterialTheme.typography.bodySmall)
-                                } else {
-                                    suppliers.forEach { sup ->
-                                        Text("• ${sup.companyName} | Contrato: ${sup.contactName ?: "N/A"} | Tel: ${sup.phone ?: "N/A"}", style = MaterialTheme.typography.bodySmall)
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    item {
-                        AdminCard {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = "🏷️ Inventario / Productos (${products.size})",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                if (products.isEmpty()) {
-                                    Text("No hay productos en inventario.", style = MaterialTheme.typography.bodySmall)
-                                } else {
-                                    products.forEach { prod ->
-                                        Text("• ${prod.name} (SKU: ${prod.sku}) | Venta: \$${(prod.salePriceCents ?: 0) / 100.0}", style = MaterialTheme.typography.bodySmall)
-                                    }
-                                }
-                            }
-                        }
+                        } }
                     }
                 }
             }
