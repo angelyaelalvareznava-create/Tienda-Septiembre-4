@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -31,53 +33,57 @@ fun HomeScreen(
     onLogout: () -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
-    ScreenBackground {
-        Column(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+        topBar = {
             NexoTopBar(
                 title = stringResource(R.string.title_home),
                 onLoginClick = onNavigateToLogin
             )
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Only show Database button if logged in AND is Admin
-                if (SessionManager.isLoggedIn && SessionManager.isAdmin) {
-                    item {
-                        AdminButton(text = stringResource(R.string.menu_database), onClick = onNavigateToDatabase)
+        }
+    ) { innerPadding ->
+        ScreenBackground(modifier = Modifier.padding(innerPadding)) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Only show Database button if logged in AND is Admin
+                    if (SessionManager.isLoggedIn && SessionManager.isAdmin) {
+                        item {
+                            AdminButton(text = stringResource(R.string.menu_database), onClick = onNavigateToDatabase)
+                        }
                     }
-                }
-                item {
-                    AdminButton(text = stringResource(R.string.menu_calendar), onClick = onNavigateToCalendar)
-                }
-                item {
-                    AdminButton(text = stringResource(R.string.menu_suppliers), onClick = onNavigateToSuppliers)
-                }
-                item {
-                    AdminButton(text = stringResource(R.string.menu_employees), onClick = onNavigateToEmployees)
-                }
-                item {
-                    AdminButton(text = stringResource(R.string.menu_clients), onClick = onNavigateToClients)
-                }
-                // Only show Register User button if logged in AND is Admin
-                if (SessionManager.isLoggedIn && SessionManager.isAdmin) {
                     item {
-                        AdminButton(text = stringResource(R.string.menu_register_user), onClick = onNavigateToRegistration)
+                        AdminButton(text = stringResource(R.string.menu_calendar), onClick = onNavigateToCalendar)
                     }
-                }
-                item {
-                    AdminButton(text = stringResource(R.string.menu_edit_profile), onClick = onNavigateToEditProfile)
-                }
-                item {
-                    AdminButton(text = stringResource(R.string.menu_inventory), onClick = onNavigateToInventory)
-                }
-                item {
-                    AdminButton(text = stringResource(R.string.menu_movements), onClick = onNavigateToMovements)
-                }
-                item {
-                    AdminButton(text = stringResource(R.string.menu_logout), onClick = onLogout)
+                    item {
+                        AdminButton(text = stringResource(R.string.menu_suppliers), onClick = onNavigateToSuppliers)
+                    }
+                    item {
+                        AdminButton(text = stringResource(R.string.menu_employees), onClick = onNavigateToEmployees)
+                    }
+                    item {
+                        AdminButton(text = stringResource(R.string.menu_clients), onClick = onNavigateToClients)
+                    }
+                    // Only show Register User button if logged in AND is Admin
+                    if (SessionManager.isLoggedIn && SessionManager.isAdmin) {
+                        item {
+                            AdminButton(text = stringResource(R.string.menu_register_user), onClick = onNavigateToRegistration)
+                        }
+                    }
+                    item {
+                        AdminButton(text = stringResource(R.string.menu_edit_profile), onClick = onNavigateToEditProfile)
+                    }
+                    item {
+                        AdminButton(text = stringResource(R.string.menu_inventory), onClick = onNavigateToInventory)
+                    }
+                    item {
+                        AdminButton(text = stringResource(R.string.menu_movements), onClick = onNavigateToMovements)
+                    }
+                    item {
+                        AdminButton(text = stringResource(R.string.menu_logout), onClick = onLogout)
+                    }
                 }
             }
         }

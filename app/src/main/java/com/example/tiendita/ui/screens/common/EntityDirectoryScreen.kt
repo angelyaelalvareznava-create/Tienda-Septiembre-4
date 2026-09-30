@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
@@ -54,14 +55,14 @@ fun EntityDirectoryScreen(
             Column(modifier = Modifier.fillMaxSize()) {
                 NexoTopBar(title = title, onBackClick = onBack)
 
-                Box(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+                Box(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 18.dp)) {
                     if (items.isEmpty()) {
                         Text(
                             text = emptyMessage,
                             modifier = Modifier.align(Alignment.Center)
                         )
                     } else {
-                        AdminCard {
+                        AdminCard(modifier = Modifier.align(Alignment.TopCenter).widthIn(max = 620.dp)) {
                             LazyColumn {
                                 items(visibleItems, key = { it.id }) { item ->
                                     EntityItemRow(
