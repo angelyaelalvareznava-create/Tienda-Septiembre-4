@@ -6,6 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.tiendita.data.local.converter.AccountRole
+import com.example.tiendita.auth.normalizeUsername
 
 @Entity(
     tableName = "user_accounts",
@@ -20,6 +21,7 @@ import com.example.tiendita.data.local.converter.AccountRole
     ],
     indices = [
         Index(value = ["username"], unique = true),
+        Index(value = ["normalized_username"], unique = true),
         Index(value = ["employee_id"], unique = true)
     ]
 )
@@ -59,5 +61,17 @@ data class UserAccountEntity(
     val createdAt: Long = System.currentTimeMillis(),
     
     @ColumnInfo(name = "updated_at")
-    val updatedAt: Long = System.currentTimeMillis()
-)
+    val updatedAt: Long = System.currentTimeMillis(),
+
+    @ColumnInfo(name = "normalized_username")
+    val normalizedUsername: String = normalizeUsername(username),
+
+    @ColumnInfo(name = "password_parameters_version")
+    val passwordParametersVersion: Int = 1
+) {
+    init {
+        require(normalizedUsername == normalizeUsername(username)) {
+            "Username normalization mismatch"
+        }
+    }
+}

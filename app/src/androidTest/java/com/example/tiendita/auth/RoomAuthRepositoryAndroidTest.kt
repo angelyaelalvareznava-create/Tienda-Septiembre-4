@@ -37,6 +37,7 @@ class RoomAuthRepositoryAndroidTest {
             assertEquals(AccountRole.ALMACEN, withTimeout(5_000) { repository.observeAccount(id).first() }?.role)
             database.accountDao().updateAccount(row.copy(id = id, active = false))
             assertNull(repository.getAccount(id))
+            assertEquals(AuthenticationResult.InvalidCredentials, repository.authenticate("admin", " secret "))
             assertNull(withTimeout(5_000) { repository.observeAccount(id).first() })
         } finally {
             database.close()

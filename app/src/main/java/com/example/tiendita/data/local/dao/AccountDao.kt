@@ -2,6 +2,7 @@ package com.example.tiendita.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.tiendita.data.local.entity.UserAccountEntity
@@ -9,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AccountDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertAccount(account: UserAccountEntity): Long
 
     @Update
@@ -21,10 +22,14 @@ interface AccountDao {
     @Query("SELECT * FROM user_accounts WHERE id = :id")
     fun observeAccountById(id: Long): Flow<UserAccountEntity?>
 
-    // V9 names are normalized with Locale.ROOT in the repository.
-    // SQLite LOWER does not provide Unicode case folding.
-    @Query("SELECT * FROM user_accounts ORDER BY id")
-    suspend fun getAccountsForAuthentication(): List<UserAccountEntity>
+    @Query("SELECT * FROM user_accounts WHERE normalized_username = :normalizedUsername")
+    suspend fun getAccountByNormalizedUsername(normalizedUsername: String): UserAccountEntity?
+
+    @Query("SELECT COUNT(*) FROM user_accounts")
+    suspend fun countAccounts(): Int
+
+    @Query("SELECT COUNT(*) FROM user_accounts WHERE active = 1 AND role = 'ADMIN'")
+    suspend fun countActiveAdmins(): Int
 
     @Query("SELECT * FROM user_accounts WHERE username = :username")
     suspend fun getAccountByUsername(username: String): UserAccountEntity?

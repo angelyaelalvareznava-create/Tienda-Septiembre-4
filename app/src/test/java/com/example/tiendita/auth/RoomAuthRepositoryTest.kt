@@ -25,7 +25,7 @@ class RoomAuthRepositoryTest {
 
     @Test fun caseInsensitiveUsernameAndUnmodifiedPassword() = runTest {
         val row = account()
-        whenever(dao.getAccountsForAuthentication()).thenReturn(listOf(row))
+        whenever(dao.getAccountByNormalizedUsername("admin")).thenReturn(row)
         whenever(dao.getAccountById(1)).thenReturn(row)
         assertEquals(AuthenticationResult.Success(AuthenticatedAccount(1, "Admin", "Presentation", AccountRole.CONSULTA)),
             repository.authenticate(" ADMIN ", " secret "))
@@ -33,21 +33,43 @@ class RoomAuthRepositoryTest {
     }
 
     @Test fun missingUserDoesNotCreateFixedAdmin() = runTest {
-        whenever(dao.getAccountsForAuthentication()).thenReturn(emptyList())
+        whenever(dao.getAccountByNormalizedUsername(any())).thenReturn(null)
         assertEquals(AuthenticationResult.InvalidCredentials, repository.authenticate("admin", "Admin123!"))
         assertEquals(AuthenticationResult.InvalidCredentials, repository.authenticate("missing", " secret "))
         verify(dao, never()).insertAccount(any())
     }
 
-    @Test fun normalizedCollisionRejectedWithoutReplacingAccounts() = runTest {
-        whenever(dao.getAccountsForAuthentication()).thenReturn(listOf(account(), account(2, "ADMIN")))
-        assertEquals(AuthenticationResult.UsernameConflict, repository.authenticate("admin", " secret "))
-        verify(dao, never()).updateAccount(any())
-        verify(dao, never()).insertAccount(any())
+    @Test fun authenticationUsesOnlyIndexedLookupAndRevalidation() = runTest {
+        val row = account()
+        whenever(dao.getAccountByNormalizedUsername("admin")).thenReturn(row)
+        whenever(dao.getAccountById(1)).thenReturn(row)
+        assertTrue(repository.authenticate(" ADMIN ", " secret ") is AuthenticationResult.Success)
+        verify(dao).getAccountByNormalizedUsername("admin")
+        verify(dao).getAccountById(1)
+        verifyNoMoreInteractions(dao)
+    }
+
+    @Test fun visibleUsernameIsPreservedSeparatelyFromNormalizedUsername() {
+        val row = account(username = " ADMIN ")
+        assertEquals(" ADMIN ", row.username)
+        assertEquals("admin", row.normalizedUsername)
+        assertEquals(1, row.passwordParametersVersion)
+    }
+
+    @Test fun unknownParametersVersionFailsClosed() = runTest {
+        whenever(dao.getAccountByNormalizedUsername("admin"))
+            .thenReturn(account().copy(passwordParametersVersion = 2))
+        assertEquals(AuthenticationResult.InvalidCredentials, repository.authenticate("admin", " secret "))
+        verify(dao, never()).getAccountById(any())
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun mismatchedNormalizationCannotBeConstructed() {
+        account().copy(normalizedUsername = "different")
     }
 
     @Test fun roleComesFromLatestRoomRecordNotUsername() = runTest {
-        whenever(dao.getAccountsForAuthentication()).thenReturn(listOf(account(role = AccountRole.ADMIN)))
+        whenever(dao.getAccountByNormalizedUsername("admin")).thenReturn(account(role = AccountRole.ADMIN))
         whenever(dao.getAccountById(1)).thenReturn(account(role = AccountRole.ALMACEN))
         val result = repository.authenticate("admin", " secret ") as AuthenticationResult.Success
         assertEquals(AccountRole.ALMACEN, result.account.role)
@@ -60,7 +82,7 @@ class RoomAuthRepositoryTest {
     }
 
     @Test fun disablingAccountDuringVerificationRejectsLogin() = runTest {
-        whenever(dao.getAccountsForAuthentication()).thenReturn(listOf(account()))
+        whenever(dao.getAccountByNormalizedUsername("admin")).thenReturn(account())
         whenever(dao.getAccountById(1)).thenReturn(account(active = false))
         assertEquals(AuthenticationResult.InvalidCredentials, repository.authenticate("admin", " secret "))
     }

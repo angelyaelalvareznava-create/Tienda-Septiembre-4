@@ -12,11 +12,8 @@ class RoomAuthRepository(
     override suspend fun authenticate(username: String, password: String): AuthenticationResult {
         val normalized = normalizeUsername(username)
         if (normalized.isEmpty()) return AuthenticationResult.InvalidCredentials
-        // Until V10 migration, normalize V9 names in Kotlin, including Unicode.
-        val matches = accountDao.getAccountsForAuthentication()
-            .filter { normalizeUsername(it.username) == normalized }
-        if (matches.size > 1) return AuthenticationResult.UsernameConflict
-        val account = matches.singleOrNull() ?: return AuthenticationResult.InvalidCredentials
+        val account = accountDao.getAccountByNormalizedUsername(normalized)
+            ?: return AuthenticationResult.InvalidCredentials
         val identity = account.toValidIdentity() ?: return AuthenticationResult.InvalidCredentials
         val characters = password.toCharArray()
         return try {
@@ -24,7 +21,7 @@ class RoomAuthRepository(
                 val latest = accountDao.getAccountById(identity.accountId)
                 val latestIdentity = latest?.toValidIdentity()
                 if (latestIdentity != null && latest.credentials() == account.credentials() &&
-                    normalizeUsername(latest.username) == normalized) {
+                    latest.normalizedUsername == normalized) {
                     AuthenticationResult.Success(latestIdentity)
                 } else {
                     AuthenticationResult.InvalidCredentials
@@ -44,7 +41,9 @@ class RoomAuthRepository(
         accountDao.observeAccountById(accountId).map { it?.toValidIdentity() }
 
     private fun UserAccountEntity.toValidIdentity(): AuthenticatedAccount? {
-        if (id <= 0 || !active || normalizeUsername(username).isEmpty() || !passwordHasher.isSupported(credentials())) return null
+        if (id <= 0 || !active || normalizedUsername.isEmpty() ||
+            normalizedUsername != normalizeUsername(username) || passwordParametersVersion != 1 ||
+            !passwordHasher.isSupported(credentials())) return null
         return AuthenticatedAccount(id, username, displayName, role)
     }
 
