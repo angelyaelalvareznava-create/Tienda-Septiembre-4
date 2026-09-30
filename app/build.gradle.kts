@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.gameshelf"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
@@ -53,6 +53,7 @@ dependencies {
     // Room (base de datos local)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.datastore.preferences)
     ksp(libs.androidx.room.compiler)
 
     // Coroutines (inserciones en segundo plano)

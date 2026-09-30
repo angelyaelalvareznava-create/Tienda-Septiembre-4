@@ -18,6 +18,14 @@ interface AccountDao {
     @Query("SELECT * FROM user_accounts WHERE id = :id")
     suspend fun getAccountById(id: Long): UserAccountEntity?
 
+    @Query("SELECT * FROM user_accounts WHERE id = :id")
+    fun observeAccountById(id: Long): Flow<UserAccountEntity?>
+
+    // V9 names are normalized with Locale.ROOT in the repository.
+    // SQLite LOWER does not provide Unicode case folding.
+    @Query("SELECT * FROM user_accounts ORDER BY id")
+    suspend fun getAccountsForAuthentication(): List<UserAccountEntity>
+
     @Query("SELECT * FROM user_accounts WHERE username = :username")
     suspend fun getAccountByUsername(username: String): UserAccountEntity?
 
