@@ -48,7 +48,7 @@ import com.example.tiendita.model.User
         MovementLineEntity::class,
         CalendarEventEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 @TypeConverters(EnumConverters::class)
